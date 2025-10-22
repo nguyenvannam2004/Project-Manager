@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:project_management/core/entities/status.dart';
-import 'package:project_management/core/entities/timestamps.dart';
+import 'package:project_manager/core/entities/status.dart';
+import 'package:project_manager/core/entities/timestamp.dart';
 
 class Stage{
   final int id;
@@ -8,7 +8,7 @@ class Stage{
   final int projectId;
   final Text description;
   final Status status;
-  final Timestamps timestamps;
+  final TimeStamp timestamps;
 
   Stage(this.id, this.name, this.projectId, this.description, this.status, this.timestamps);
   

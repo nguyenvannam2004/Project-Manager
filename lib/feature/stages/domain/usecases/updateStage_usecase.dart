@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
-import 'package:project_management/core/entities/status.dart';
-import 'package:project_management/features/stages/domain/entities/stage.dart';
-import 'package:project_management/features/stages/domain/repository/stage_repository.dart';
-import 'package:project_management/core/entities/timestamps.dart';
+import 'package:project_manager/core/entities/status.dart';
+import 'package:project_manager/core/entities/timestamp.dart';
+import 'package:project_manager/feature/stages/domain/entities/stage.dart';
+import 'package:project_manager/feature/stages/domain/repository/stage_repository.dart';
 
 class UpdateStageUsecase {
   final StageRepository repository;
@@ -19,7 +19,7 @@ class UpdateStageUsecase {
     DateTime updated_at
     
   ) async {
-    final Timestamps timestamps = Timestamps(create_at, updated_at, start_date, end_date);
+    final TimeStamp timestamps = TimeStamp(create_at, updated_at, start_date, end_date);
     final data = Stage(id, name, projectId, description, status, timestamps);
     return await this.repository.updateStage(data);
   }

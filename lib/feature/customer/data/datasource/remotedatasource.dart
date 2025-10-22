@@ -1,4 +1,4 @@
-import 'package:project_manager/core/network/apiclient.dart';
+import 'package:project_manager/core/network/customer/apiclient.dart';
 import 'package:project_manager/feature/customer/data/models/CustomerModel.dart';
 
 class RemoteDataSource {

@@ -1,4 +1,5 @@
-import 'package:project_management/features/stages/domain/entities/stage.dart';
+
+import 'package:project_manager/feature/stages/domain/entities/stage.dart';
 
 abstract class StageRepository {
   Future<List<Stage>> getAllStages();

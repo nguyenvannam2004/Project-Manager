@@ -8,3 +8,4 @@ class Customer {
 
   Customer(this.id, this.name, this.phone, this.email);
 }
+
