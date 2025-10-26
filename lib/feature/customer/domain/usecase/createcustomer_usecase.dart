@@ -5,7 +5,8 @@ class CreatecustomerUsecase {
   final CustomerRepository customerRepository;
 
   CreatecustomerUsecase(this.customerRepository);
-  Future<void> call(String id, String name, String email, String phone) async {
+  // Use parameter order (id, name, phone, email)
+  Future<void> call(String id, String name, String phone, String email) async {
     final data = Customer(id, name, phone, email);
     return await this.customerRepository.creatCustomer(data);
   }
