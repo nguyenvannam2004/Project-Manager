@@ -1,5 +1,6 @@
-import 'package:project_manager/feature/project/domain/entities/project.dart';
-import 'package:project_manager/feature/project/domain/repository/projectrepository.dart';
+
+import '../entities/project.dart';
+import '../repository/projectrepository.dart';
 
 class GetProjectUsecase {
   final ProjectRepository projectRepository;

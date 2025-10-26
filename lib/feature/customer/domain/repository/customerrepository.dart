@@ -1,4 +1,5 @@
-import 'package:project_manager/feature/customer/domain/entities/customer.dart';
+
+import '../entities/customer.dart';
 
 abstract class CustomerRepository {
   //crud  create, read, update, delete;

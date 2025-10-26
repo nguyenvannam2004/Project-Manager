@@ -1,4 +1,5 @@
-import 'package:project_manager/feature/project/domain/repository/projectrepository.dart';
+
+import '../repository/projectrepository.dart';
 
 class DeleteProjectUsecase {
   final ProjectRepository projectRepository;
