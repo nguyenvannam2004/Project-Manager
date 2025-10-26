@@ -7,8 +7,8 @@ class ApiClient {
     if (customer.isNotEmpty) return;
     customer = [
       Customer('c1','kh1', '12321321','ksjdf@gmail.com'),
-      Customer('c2', 'kh2', '12321321', 'ksjdf@gmail.com'),
-      Customer( 'c3',  'kh3',  '12321321', 'ksjdf@gmail.com'),
+      //Customer('c2', 'kh2', '12321321', 'ksjdf@gmail.com'),
+      //Customer( 'c3',  'kh3',  '12321321', 'ksjdf@gmail.com'),
     ];
   }
 

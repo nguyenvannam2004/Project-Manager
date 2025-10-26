@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:project_manager/core/network/customer/apiclient.dart';
 import 'package:project_manager/feature/customer/data/datasource/remotedatasource.dart';
 import 'package:project_manager/feature/customer/data/repository_ipl/customerrepository_ipl.dart';
-import 'package:project_manager/feature/customer/domain/repository/customerrepository.dart';
 import 'package:project_manager/feature/customer/domain/usecase/createcustomer_usecase.dart';
 import 'package:project_manager/feature/customer/domain/usecase/deletecustomer_usecase.dart';
 import 'package:project_manager/feature/customer/domain/usecase/getcustomer_usecase.dart';
 import 'package:project_manager/feature/customer/domain/usecase/updatecustomerusecase.dart';
-
-import 'package:project_manager/feature/customer/prsentation/statefullwidget_setstate/customerpage.dart';
+import 'package:project_manager/feature/customer/prsentation/bloc/customer_bloc.dart';
+import 'package:project_manager/feature/customer/prsentation/bloc/customer_event.dart';
+import 'package:project_manager/feature/customer/prsentation/pages/customer_page.dart';
 
 void main() {
   final ApiClient apiClient = ApiClient();
   final RemoteDataSource remoteDataSource = RemoteDataSource(apiClient);
-  final CustomerRepository customerRepository = CustomerRepositoryIpl(
+  final CustomerRepositoryIpl customerRepository = CustomerRepositoryIpl(
     remoteDataSource,
   );
   final GetCustomerUsecase getcustomerUsecase = GetCustomerUsecase(
@@ -43,7 +44,6 @@ class MyApp extends StatelessWidget {
   final DeleteCustomerUsecase deletecustomerUsecase;
   final CreatecustomerUsecase createcustomerUsecase;
   final UpdateCustomerUsecase updatecustomerUsecase;
-
   const MyApp({
     super.key,
     required this.getcustomerUsecase,
@@ -51,18 +51,31 @@ class MyApp extends StatelessWidget {
     required this.createcustomerUsecase,
     required this.updatecustomerUsecase,
   });
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: CustomerPage(
-        getcustomerUsecase: getcustomerUsecase,
-        deletecustomerUsecase: deletecustomerUsecase,
-        createcustomerUsecase: createcustomerUsecase,
-        updatecustomerUsecase: updatecustomerUsecase,
+    return MultiBlocProvider(
+      providers: [
+        
+        BlocProvider(
+          create: (context) => CustomerBloc(
+            getCustomerUsecase: getcustomerUsecase,
+            createCustomerUsecase: createcustomerUsecase,
+            updateCustomerUsecase: updatecustomerUsecase,
+            deleteCustomerUsecase: deletecustomerUsecase,
+          )..add(LoadCustomersEvent()),
+        ),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Customer Manager',
+        theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
+        home: CustomerPage(
+          getCustomerUsecase: getcustomerUsecase,
+          deleteCustomerUsecase: deletecustomerUsecase,
+          createCustomerUsecase: createcustomerUsecase,
+          updateCustomerUsecase: updatecustomerUsecase,
+        ),
       ),
     );
   }
