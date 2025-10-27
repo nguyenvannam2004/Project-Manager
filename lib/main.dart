@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:project_manager/core/network/customer/apiclient.dart';
+import 'package:project_manager/core/network/customer/ApiFromBackend.dart';
+import 'package:project_manager/core/network/customer/IApiClient.dart';
+
 import 'package:project_manager/feature/customer/data/datasource/remotedatasource.dart';
 import 'package:project_manager/feature/customer/data/repository_ipl/customerrepository_ipl.dart';
 import 'package:project_manager/feature/customer/domain/usecase/createcustomer_usecase.dart';
@@ -12,7 +14,7 @@ import 'package:project_manager/feature/customer/prsentation/bloc/customer_event
 import 'package:project_manager/feature/customer/prsentation/pages/customer_page.dart';
 
 void main() {
-  final ApiClient apiClient = ApiClient();
+  final IApiClient apiClient = ApiFromBackend('https://localhost:7277');
   final RemoteDataSource remoteDataSource = RemoteDataSource(apiClient);
   final CustomerRepositoryIpl customerRepository = CustomerRepositoryIpl(
     remoteDataSource,
@@ -56,7 +58,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        
         BlocProvider(
           create: (context) => CustomerBloc(
             getCustomerUsecase: getcustomerUsecase,
