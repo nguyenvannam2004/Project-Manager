@@ -1,80 +1,79 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:project_manager/core/network/customer/apiclient.dart';
-import 'package:project_manager/feature/customer/data/datasource/remotedatasource.dart';
-import 'package:project_manager/feature/customer/data/repository_ipl/customerrepository_ipl.dart';
-import 'package:project_manager/feature/customer/domain/usecase/createcustomer_usecase.dart';
-import 'package:project_manager/feature/customer/domain/usecase/deletecustomer_usecase.dart';
-import 'package:project_manager/feature/customer/domain/usecase/getcustomer_usecase.dart';
-import 'package:project_manager/feature/customer/domain/usecase/updatecustomerusecase.dart';
-import 'package:project_manager/feature/customer/prsentation/bloc/customer_bloc.dart';
-import 'package:project_manager/feature/customer/prsentation/bloc/customer_event.dart';
-import 'package:project_manager/feature/customer/prsentation/pages/customer_page.dart';
+import 'package:project_manager/core/network/stages/apiclient.dart'; // ← Import ApiClient từ stages
+import 'package:project_manager/feature/stages/data/datasource/remotedatasource.dart';
+import 'package:project_manager/feature/stages/data/repository_ipl/stagesrepository_ipl.dart';
+import 'package:project_manager/feature/stages/domain/usecases/createStage_usecase.dart';
+import 'package:project_manager/feature/stages/domain/usecases/deleteStage_usecase.dart';
+import 'package:project_manager/feature/stages/domain/usecases/getStage_usecase.dart';
+import 'package:project_manager/feature/stages/domain/usecases/updateStage_usecase.dart';
+import 'package:project_manager/feature/stages/presentation/bloc/stage_bloc.dart';
+import 'package:project_manager/feature/stages/presentation/bloc/stage_event.dart';
+import 'package:project_manager/feature/stages/presentation/pages/stage_page.dart';
 
 void main() {
-  final ApiClient apiClient = ApiClient();
-  final RemoteDataSource remoteDataSource = RemoteDataSource(apiClient);
-  final CustomerRepositoryIpl customerRepository = CustomerRepositoryIpl(
-    remoteDataSource,
+  // Stage setup - Dùng ApiClient từ stages
+  final ApiClient apiClient = ApiClient(); // ← ApiClient từ stages
+  final RemoteDatasource stageRemoteDataSource = RemoteDatasource(apiClient);
+  final StagesRepositoryIpl stageRepository = StagesRepositoryIpl(
+    stageRemoteDataSource,
   );
-  final GetCustomerUsecase getcustomerUsecase = GetCustomerUsecase(
-    customerRepository,
+  final GetStageUsecase getStageUsecase = GetStageUsecase(
+    stageRepository,
   );
-  final DeleteCustomerUsecase deletecustomerUsecase = DeleteCustomerUsecase(
-    customerRepository,
+  final DeletestageUsecase deleteStageUsecase = DeletestageUsecase(
+    stageRepository,
   );
-  final CreatecustomerUsecase createcustomerUsecase = CreatecustomerUsecase(
-    customerRepository,
+  final CreateStageUsecase createStageUsecase = CreateStageUsecase(
+    stageRepository,
   );
-  final UpdateCustomerUsecase updatecustomerUsecase = UpdateCustomerUsecase(
-    customerRepository,
+  final UpdateStageUsecase updateStageUsecase = UpdateStageUsecase(
+    stageRepository,
   );
+
   runApp(
     MyApp(
-      getcustomerUsecase: getcustomerUsecase,
-      deletecustomerUsecase: deletecustomerUsecase,
-      createcustomerUsecase: createcustomerUsecase,
-      updatecustomerUsecase: updatecustomerUsecase,
+      getStageUsecase: getStageUsecase,
+      deleteStageUsecase: deleteStageUsecase,
+      createStageUsecase: createStageUsecase,
+      updateStageUsecase: updateStageUsecase,
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  final GetCustomerUsecase getcustomerUsecase;
-  final DeleteCustomerUsecase deletecustomerUsecase;
-  final CreatecustomerUsecase createcustomerUsecase;
-  final UpdateCustomerUsecase updatecustomerUsecase;
+  final GetStageUsecase getStageUsecase;
+  final DeletestageUsecase deleteStageUsecase;
+  final CreateStageUsecase createStageUsecase;
+  final UpdateStageUsecase updateStageUsecase;
+
   const MyApp({
     super.key,
-    required this.getcustomerUsecase,
-    required this.deletecustomerUsecase,
-    required this.createcustomerUsecase,
-    required this.updatecustomerUsecase,
+    required this.getStageUsecase,
+    required this.deleteStageUsecase,
+    required this.createStageUsecase,
+    required this.updateStageUsecase,
   });
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        
-        BlocProvider(
-          create: (context) => CustomerBloc(
-            getCustomerUsecase: getcustomerUsecase,
-            createCustomerUsecase: createcustomerUsecase,
-            updateCustomerUsecase: updatecustomerUsecase,
-            deleteCustomerUsecase: deletecustomerUsecase,
-          )..add(LoadCustomersEvent()),
-        ),
-      ],
+    return BlocProvider(
+      create: (context) => StageBloc(
+        getStageUsecase: getStageUsecase,
+        createStageUsecase: createStageUsecase,
+        updateStageUsecase: updateStageUsecase,
+        deleteStageUsecase: deleteStageUsecase,
+      )..add(LoadStageEvent()),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Customer Manager',
+        title: 'Stage Manager',
         theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
-        home: CustomerPage(
-          getCustomerUsecase: getcustomerUsecase,
-          deleteCustomerUsecase: deletecustomerUsecase,
-          createCustomerUsecase: createcustomerUsecase,
-          updateCustomerUsecase: updatecustomerUsecase,
+        home: StagePage(
+          getStageUsecase: getStageUsecase,
+          deleteStageUsecase: deleteStageUsecase,
+          createStageUsecase: createStageUsecase,
+          updateStageUsecase: updateStageUsecase,
+          projectId: 1,
         ),
       ),
     );
