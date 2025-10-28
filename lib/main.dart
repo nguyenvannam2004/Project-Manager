@@ -1,55 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:project_manager/core/network/customer/apiclient.dart';
-import 'package:project_manager/feature/customer/data/datasource/remotedatasource.dart';
-import 'package:project_manager/feature/customer/data/repository_ipl/customerrepository_ipl.dart';
-import 'package:project_manager/feature/customer/domain/usecase/createcustomer_usecase.dart';
-import 'package:project_manager/feature/customer/domain/usecase/deletecustomer_usecase.dart';
-import 'package:project_manager/feature/customer/domain/usecase/getcustomer_usecase.dart';
-import 'package:project_manager/feature/customer/domain/usecase/updatecustomerusecase.dart';
-import 'package:project_manager/feature/customer/prsentation/bloc/customer_bloc.dart';
-import 'package:project_manager/feature/customer/prsentation/bloc/customer_event.dart';
-import 'package:project_manager/feature/customer/prsentation/pages/customer_page.dart';
+import 'package:project_manager/core/network/task/apiclient.dart';
+import 'package:project_manager/feature/task/data/datasource/remotedatasource.dart';
+import 'package:project_manager/feature/task/data/repository_ipl/taskrepository_ipl.dart';
+import 'package:project_manager/feature/task/domain/usecase/createtask_usecase.dart';
+import 'package:project_manager/feature/task/domain/usecase/deletetask_usecase.dart';
+import 'package:project_manager/feature/task/domain/usecase/gettask_usecase.dart';
+import 'package:project_manager/feature/task/domain/usecase/updatetask_usecase.dart';
+import 'package:project_manager/feature/task/presentation/bloc/task_bloc.dart';
+import 'package:project_manager/feature/task/presentation/bloc/task_event.dart';
+import 'package:project_manager/feature/task/presentation/pages/task_page.dart';
 
 void main() {
-  final ApiClient apiClient = ApiClient();
+  final Apiclient apiClient = Apiclient();
   final RemoteDataSource remoteDataSource = RemoteDataSource(apiClient);
-  final CustomerRepositoryIpl customerRepository = CustomerRepositoryIpl(
+  final TaskRepositoryIpl taskRepository = TaskRepositoryIpl(
     remoteDataSource,
   );
-  final GetCustomerUsecase getcustomerUsecase = GetCustomerUsecase(
-    customerRepository,
+  final GetTaskUsecase gettaskUsecase = GetTaskUsecase(
+    taskRepository,
   );
-  final DeleteCustomerUsecase deletecustomerUsecase = DeleteCustomerUsecase(
-    customerRepository,
+  final DeleteTaskUsecase deletetaskUsecase = DeleteTaskUsecase(
+    taskRepository,
   );
-  final CreatecustomerUsecase createcustomerUsecase = CreatecustomerUsecase(
-    customerRepository,
+  final CreateTaskUsecase createtaskUsecase = CreateTaskUsecase(
+    taskRepository,
   );
-  final UpdateCustomerUsecase updatecustomerUsecase = UpdateCustomerUsecase(
-    customerRepository,
+  final UpdateTaskUsecase updatetaskUsecase = UpdateTaskUsecase(
+    taskRepository,
   );
   runApp(
     MyApp(
-      getcustomerUsecase: getcustomerUsecase,
-      deletecustomerUsecase: deletecustomerUsecase,
-      createcustomerUsecase: createcustomerUsecase,
-      updatecustomerUsecase: updatecustomerUsecase,
+      gettaskUsecase: gettaskUsecase,
+      deletetaskUsecase: deletetaskUsecase,
+      createtaskUsecase: createtaskUsecase,
+      updatetaskUsecase: updatetaskUsecase,
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  final GetCustomerUsecase getcustomerUsecase;
-  final DeleteCustomerUsecase deletecustomerUsecase;
-  final CreatecustomerUsecase createcustomerUsecase;
-  final UpdateCustomerUsecase updatecustomerUsecase;
+  final GetTaskUsecase gettaskUsecase;
+  final DeleteTaskUsecase deletetaskUsecase;
+  final CreateTaskUsecase createtaskUsecase;
+  final UpdateTaskUsecase updatetaskUsecase;
   const MyApp({
     super.key,
-    required this.getcustomerUsecase,
-    required this.deletecustomerUsecase,
-    required this.createcustomerUsecase,
-    required this.updatecustomerUsecase,
+    required this.gettaskUsecase,
+    required this.deletetaskUsecase,
+    required this.createtaskUsecase,
+    required this.updatetaskUsecase,
   });
 
   @override
@@ -58,23 +58,23 @@ class MyApp extends StatelessWidget {
       providers: [
         
         BlocProvider(
-          create: (context) => CustomerBloc(
-            getCustomerUsecase: getcustomerUsecase,
-            createCustomerUsecase: createcustomerUsecase,
-            updateCustomerUsecase: updatecustomerUsecase,
-            deleteCustomerUsecase: deletecustomerUsecase,
-          )..add(LoadCustomersEvent()),
+          create: (context) => TaskBloc(
+            getTaskUseCase: gettaskUsecase,
+            createTaskUseCase: createtaskUsecase,
+            updateTaskUseCase: updatetaskUsecase,
+            deleteTaskUseCase: deletetaskUsecase,
+          )..add(LoadTasksEvent()),
         ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Customer Manager',
+        title: 'Task Manager',
         theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
-        home: CustomerPage(
-          getCustomerUsecase: getcustomerUsecase,
-          deleteCustomerUsecase: deletecustomerUsecase,
-          createCustomerUsecase: createcustomerUsecase,
-          updateCustomerUsecase: updatecustomerUsecase,
+        home: TaskPage(
+          getTaskUseCase: gettaskUsecase,
+          deleteTaskUseCase: deletetaskUsecase,
+          createTaskUseCase: createtaskUsecase,
+          updateTaskUseCase: updatetaskUsecase,
         ),
       ),
     );

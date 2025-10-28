@@ -19,6 +19,7 @@ class TaskModel extends Task
   }
 
   Map<String,dynamic> toJson() => {
+    'id': id,
     'stagedId' : stagedId,
     'name' : name,
     'description' : description,
