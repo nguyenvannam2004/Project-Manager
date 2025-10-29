@@ -10,6 +10,6 @@ class UpdateTaskUsecase {
   Future<void> call(int id, int stagedId, String name, String description, Status status, int createBy, DateTime createdAt, DateTime updatedAt, DateTime startDate, DateTime endDate) async {
     final timeStamp = TimeStamp(createdAt, updatedAt, startDate, endDate);
     final data = Task(id, stagedId, name, description, status, createBy, timeStamp);
-    return await taskrepository.createTask(data);
+    return await taskrepository.updateTask(data);
   }
 }

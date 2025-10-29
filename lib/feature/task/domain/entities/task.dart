@@ -1,7 +1,8 @@
+import 'package:equatable/equatable.dart';
 import 'package:project_manager/core/entities/status.dart';
 import 'package:project_manager/core/entities/timestamp.dart';
 
-class Task {
+class Task extends Equatable{
   final int id;
   final int stagedId;
   final String name;
@@ -11,4 +12,7 @@ class Task {
   final TimeStamp timeStamp;
 
   Task(this.id, this.stagedId, this.name, this.description, this.status, this.createBy, this.timeStamp);
+  
+  @override
+  List<Object?> get props => [id, stagedId, name, description, status, createBy, timeStamp];
 }

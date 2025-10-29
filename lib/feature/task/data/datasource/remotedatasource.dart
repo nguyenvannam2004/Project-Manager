@@ -18,11 +18,13 @@ class RemoteDataSource {
   }
 
   Future<TaskModel> updateTask(TaskModel task) async {
-    final data = await this.apiclient.post('/tasks/${task.id}', task.toJson());
+    // Use PUT for update; ApiClient.put will handle updating the in-memory list
+    final data = await this.apiclient.put('/tasks/${task.id}', task.toJson());
     return TaskModel.fromJson(data as Map<String, dynamic>,data['id'] as int); 
   }
 
-  Future<void> deleteTask(String id){
+  // Accept int id to keep domain types consistent; ApiClient will stringify when building URL
+  Future<void> deleteTask(int id){
     return this.apiclient.delete('/tasks/$id');
   }
 }
