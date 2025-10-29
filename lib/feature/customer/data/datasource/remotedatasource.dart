@@ -1,5 +1,7 @@
-import 'package:project_manager/core/network/customer/IApiClient.dart';
+
 import 'package:project_manager/feature/customer/data/models/CustomerModel.dart';
+
+import '../../../../core/network/auth/IApiclient.dart';
 
 class RemoteDataSource {
   final IApiClient apiclient;
