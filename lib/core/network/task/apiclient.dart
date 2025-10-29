@@ -64,7 +64,9 @@ class Apiclient {
   Future<dynamic> put(String path, Map<String, dynamic> body) async { 
      await Future.delayed(const Duration(milliseconds: 400));
     if (path.startsWith('/tasks/')) {
-      final id = path.split('/').last;
+      final idStr = path.split('/').last;
+      final id = int.tryParse(idStr);
+      if (id == null) throw Exception('Invalid id in path');
       final index = task.indexWhere((p) => p.id == id);
       if (index == -1) throw Exception('Task not found');
 
@@ -94,7 +96,9 @@ class Apiclient {
   Future<void> delete(String path) async {
     await Future.delayed(const Duration(milliseconds: 400));
     if (path.startsWith('/tasks/')) {
-      final id = path.split('/').last;
+      final idStr = path.split('/').last;
+      final id = int.tryParse(idStr);
+      if (id == null) throw Exception('Invalid id in path');
       task.removeWhere((p) => p.id == id);
       return;
     }

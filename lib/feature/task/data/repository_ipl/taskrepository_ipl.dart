@@ -17,7 +17,7 @@ class TaskRepositoryIpl extends TaskRepository{
 
   @override
   Future<void> deleteTask(int id) {
-    return this.remotedatasource.deleteTask(id as String);
+    return this.remotedatasource.deleteTask(id);
   }
 
   @override
@@ -30,5 +30,4 @@ class TaskRepositoryIpl extends TaskRepository{
     final data = TaskModel(task.id, task.stagedId, task.name, task.description, task.status, task.createBy, task.timeStamp);
     return this.remotedatasource.updateTask(data);
   }
-
 }

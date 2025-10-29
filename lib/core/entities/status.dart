@@ -2,5 +2,5 @@ enum Status {
   pending,
   inProgress,
   completed,
-  cancelled,
+  cancelled, todo,
 }

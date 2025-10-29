@@ -14,7 +14,7 @@ class CustomerRepositoryIpl extends CustomerRepository {
   }
 
   @override
-  Future<void> deleteCustomer(String id) {
+  Future<void> deleteCustomer(int id) {
     return this.remotedatasrc.deleteCustomer(id);
   }
 
