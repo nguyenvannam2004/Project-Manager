@@ -1,7 +1,8 @@
-import 'package:project_manager/feature/project/domain/entities/project.dart';
-import 'package:project_manager/feature/project/domain/repository/projectrepository.dart';
-import 'package:project_manager/core/entities/status.dart';
-import 'package:project_manager/core/entities/timestamp.dart';
+
+import '../../../../core/entities/status.dart';
+import '../../../../core/entities/timestamp.dart';
+import '../entities/project.dart';
+import '../repository/projectrepository.dart';
 
 class UpdateProjectUsecase {
   final ProjectRepository projectRepository;

@@ -5,7 +5,7 @@ class DeleteCustomerUsecase {
 
   DeleteCustomerUsecase(this.customerRepository);
 
-  Future<void> call(String id) async {
+  Future<void> call(int id) async {
     return await this.customerRepository.deleteCustomer(id);
   }
 }

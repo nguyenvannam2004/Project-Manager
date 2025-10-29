@@ -1,4 +1,5 @@
-import 'package:project_manager/feature/project/domain/entities/project.dart';
+
+import '../entities/project.dart';
 
 abstract class ProjectRepository {
   Future<List<Project>> getAllProjects();

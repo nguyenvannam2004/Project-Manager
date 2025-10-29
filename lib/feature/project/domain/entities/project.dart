@@ -1,5 +1,6 @@
-import 'package:project_manager/core/entities/status.dart';
-import 'package:project_manager/core/entities/timestamp.dart';
+
+import '../../../../core/entities/status.dart';
+import '../../../../core/entities/timestamp.dart';
 
 class Project {
   final int id;

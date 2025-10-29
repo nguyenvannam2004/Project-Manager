@@ -4,7 +4,6 @@ import 'package:project_manager/feature/customer/domain/entities/customer.dart';
 import 'package:project_manager/feature/customer/prsentation/bloc/customer_bloc.dart';
 import 'package:project_manager/feature/customer/prsentation/bloc/customer_event.dart';
 
-
 class CustomerFormDialog extends StatefulWidget {
   final Customer? editingCustomer;
 
@@ -56,10 +55,9 @@ class _CustomerFormDialogState extends State<CustomerFormDialog> {
       }
       print('Editing customer: ${widget.editingCustomer}'); // Debug
       if (widget.editingCustomer == null) {
-        // Thêm mới
-        final newId = DateTime.now().millisecondsSinceEpoch.toString();
+        // Thêm mới - gửi ID là 0, backend sẽ tự sinh ID
         context.read<CustomerBloc>().add(
-          CreateCustomerEvent(newId, name, phone, email),
+          CreateCustomerEvent(0, name, phone, email),
         );
       } else {
         context.read<CustomerBloc>().add(

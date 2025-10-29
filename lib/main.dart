@@ -1,81 +1,146 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:project_manager/core/network/stages/apiclient.dart'; // ← Import ApiClient từ stages
-import 'package:project_manager/feature/stages/data/datasource/remotedatasource.dart';
-import 'package:project_manager/feature/stages/data/repository_ipl/stagesrepository_ipl.dart';
-import 'package:project_manager/feature/stages/domain/usecases/createStage_usecase.dart';
-import 'package:project_manager/feature/stages/domain/usecases/deleteStage_usecase.dart';
-import 'package:project_manager/feature/stages/domain/usecases/getStage_usecase.dart';
-import 'package:project_manager/feature/stages/domain/usecases/updateStage_usecase.dart';
-import 'package:project_manager/feature/stages/presentation/bloc/stage_bloc.dart';
-import 'package:project_manager/feature/stages/presentation/bloc/stage_event.dart';
-import 'package:project_manager/feature/stages/presentation/pages/stage_page.dart';
+import 'package:project_manager/core/network/auth/ApiFromBackend.dart';
+import 'package:project_manager/core/network/auth/IApiclient.dart';
+import 'package:project_manager/feature/auth/presentation/pages/registerpage.dart';
+import 'package:project_manager/feature/customer/prsentation/bloc/customer_bloc.dart';
+// import 'package:project_manager/core/network/customer/apiclient.dart';
+import 'package:project_manager/feature/auth/data/datasource/AuthRemoteDataSource.dart';
+import 'package:project_manager/feature/auth/data/repository_ipl/authrepository_ipl.dart';
+import 'package:project_manager/feature/auth/domain/repository/AuthRepository.dart';
+import 'package:project_manager/feature/auth/domain/usecase/LoginUsecase.dart';
+import 'package:project_manager/feature/auth/domain/usecase/LogoutUsecase.dart';
+import 'package:project_manager/feature/auth/domain/usecase/RegisterUsecase.dart';
+import 'package:project_manager/feature/auth/presentation/bloc/authbloc.dart';
+import 'package:project_manager/feature/auth/presentation/pages/loginpage.dart';
+import 'package:project_manager/feature/customer/data/datasource/remotedatasource.dart';
+import 'package:project_manager/feature/customer/data/repository_ipl/customerrepository_ipl.dart';
+import 'package:project_manager/feature/customer/domain/repository/customerrepository.dart';
+import 'package:project_manager/feature/customer/domain/usecase/createcustomer_usecase.dart';
+import 'package:project_manager/feature/customer/domain/usecase/deletecustomer_usecase.dart';
+import 'package:project_manager/feature/customer/domain/usecase/getcustomer_usecase.dart';
+import 'package:project_manager/feature/customer/domain/usecase/updatecustomerusecase.dart';
+// import 'package:project_manager/feature/customer/data/datasource/remotedatasource.dart';
+// import 'package:project_manager/feature/customer/data/repository_ipl/customerrepository_ipl.dart';
+// import 'package:project_manager/feature/customer/domain/repository/customerrepository.dart';
+// import 'package:project_manager/feature/customer/domain/usecase/createcustomer_usecase.dart';
+// import 'package:project_manager/feature/customer/domain/usecase/deletecustomer_usecase.dart';
+// import 'package:project_manager/feature/customer/domain/usecase/getcustomer_usecase.dart';
+// import 'package:project_manager/feature/customer/domain/usecase/updatecustomerusecase.dart';
 
 void main() {
-  // Stage setup - Dùng ApiClient từ stages
-  final ApiClient apiClient = ApiClient(); // ← ApiClient từ stages
-  final RemoteDatasource stageRemoteDataSource = RemoteDatasource(apiClient);
-  final StagesRepositoryIpl stageRepository = StagesRepositoryIpl(
-    stageRemoteDataSource,
+  
+  final IApiClient apiClient = ApiClientfrombackend('https://localhost:7277');
+  final AuthRemoteDataSource authremoteDataSource = AuthRemoteDataSource(
+    apiClient,
   );
-  final GetStageUsecase getStageUsecase = GetStageUsecase(
-    stageRepository,
+
+  
+
+  /// chức năng login
+  final AuthRepository authRepository = AuthRepositoryImpl(
+    authremoteDataSource,
   );
-  final DeletestageUsecase deleteStageUsecase = DeletestageUsecase(
-    stageRepository,
+  final LoginUseCase loginUseCase = LoginUseCase(authRepository);
+  final LogoutUseCase logoutUseCase = LogoutUseCase(authRepository);
+  final RegisterUseCase registerUseCase = RegisterUseCase(authRepository);
+
+
+
+
+  // chức năng liên quan tới tài nguyên khách hàng
+  final RemoteDataSource remotedatasrc = RemoteDataSource(apiClient);
+  final CustomerRepository customerRepository = CustomerRepositoryIpl(
+    remotedatasrc,
   );
-  final CreateStageUsecase createStageUsecase = CreateStageUsecase(
-    stageRepository,
+  final GetCustomerUsecase getcustomerUsecase = GetCustomerUsecase(
+    customerRepository,
   );
-  final UpdateStageUsecase updateStageUsecase = UpdateStageUsecase(
-    stageRepository,
+  final DeleteCustomerUsecase deletecustomerUsecase = DeleteCustomerUsecase(
+    customerRepository,
+  );
+  final CreatecustomerUsecase createCustomerUsecase = CreatecustomerUsecase(
+    customerRepository,
+  );
+  final UpdateCustomerUsecase updateCustomerUsecase = UpdateCustomerUsecase(
+    customerRepository,
   );
 
   runApp(
     MyApp(
-      getStageUsecase: getStageUsecase,
-      deleteStageUsecase: deleteStageUsecase,
-      createStageUsecase: createStageUsecase,
-      updateStageUsecase: updateStageUsecase,
+      loginUseCase: loginUseCase,
+      logoutUseCase: logoutUseCase,
+      registerUseCase: registerUseCase,
+
+      getcustomerUsecase: getcustomerUsecase,
+      deletecustomerUsecase: deletecustomerUsecase,
+      createCustomerUsecase: createCustomerUsecase,
+      updateCustomerUsecase: updateCustomerUsecase,
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  final GetStageUsecase getStageUsecase;
-  final DeletestageUsecase deleteStageUsecase;
-  final CreateStageUsecase createStageUsecase;
-  final UpdateStageUsecase updateStageUsecase;
+  // customer
+  final GetCustomerUsecase getcustomerUsecase;
+  final DeleteCustomerUsecase deletecustomerUsecase;
+  final CreatecustomerUsecase createCustomerUsecase;
+  final UpdateCustomerUsecase updateCustomerUsecase;
+
+
+  // auth
+  final LoginUseCase loginUseCase;
+  final LogoutUseCase logoutUseCase;
+  final RegisterUseCase registerUseCase;
 
   const MyApp({
     super.key,
-    required this.getStageUsecase,
-    required this.deleteStageUsecase,
-    required this.createStageUsecase,
-    required this.updateStageUsecase,
-  });
+    required this.loginUseCase,
+    required this.logoutUseCase,
+    required this.registerUseCase,
 
+    required this.getcustomerUsecase,
+    required this.deletecustomerUsecase,
+    required this.createCustomerUsecase,
+    required this.updateCustomerUsecase,
+  });
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => StageBloc(
-        getStageUsecase: getStageUsecase,
-        createStageUsecase: createStageUsecase,
-        updateStageUsecase: updateStageUsecase,
-        deleteStageUsecase: deleteStageUsecase,
-      )..add(LoadStageEvent()),
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Stage Manager',
-        theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
-        home: StagePage(
-          getStageUsecase: getStageUsecase,
-          deleteStageUsecase: deleteStageUsecase,
-          createStageUsecase: createStageUsecase,
-          updateStageUsecase: updateStageUsecase,
-          projectId: 1,
+    return MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => AuthBloc(
+              loginUseCase: loginUseCase,
+              logoutUseCase: logoutUseCase,
+              registerUseCase: registerUseCase,
+            ),
+          ),
+          BlocProvider(
+            create: (context) => CustomerBloc(
+              getCustomerUsecase: getcustomerUsecase,
+              deleteCustomerUsecase: deletecustomerUsecase,
+              createCustomerUsecase: createCustomerUsecase,
+              updateCustomerUsecase: updateCustomerUsecase,
+            ),
+          ),
+        ],
+        child: MaterialApp(
+          title: 'Flutter Demo',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          ),
+          home: LoginPage(
+            getcustomerUsecase: getcustomerUsecase,
+            deletecustomerUsecase: deletecustomerUsecase,
+            createCustomerUsecase: createCustomerUsecase,
+            updateCustomerUsecase: updateCustomerUsecase,
+          ),
+
+          routes: {
+            '/register': (context) => RegisterPage(), 
+          },
+          
         ),
-      ),
-    );
+      );
   }
 }
