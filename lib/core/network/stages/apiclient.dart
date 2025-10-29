@@ -1,11 +1,26 @@
+import 'package:flutter/material.dart';
 import 'package:project_manager/core/entities/status.dart';
 import 'package:project_manager/core/entities/timestamp.dart';
 import 'package:project_manager/feature/stages/data/models/stageModel.dart';
 import 'package:project_manager/feature/stages/domain/entities/stage.dart';
-import 'package:flutter/material.dart';
 
 class ApiClient {
   static List<Stage> stage = [];
+  Status _parseStatus(String statusString) {
+    switch (statusString.toLowerCase()) {
+      case 'pending':
+        return Status.pending;
+      case 'inprogress':
+      case 'in_progress':
+        return Status.inProgress;
+      case 'completed':
+        return Status.completed;
+      case 'cancelled':
+        return Status.cancelled;
+      default:
+        return Status.pending;
+    }
+  }
 
   ApiClient() {
     if (stage.isNotEmpty) return;
@@ -16,7 +31,7 @@ class ApiClient {
         101,
         Text('Initial design of the project'),
         Status.inProgress,
-        TimeStamp(DateTime.now(), null, null, null),
+        TimeStamp(DateTime.now(), DateTime.now(), DateTime.now(), DateTime.now()),
       ),
       StageModel(
         2,
@@ -24,7 +39,7 @@ class ApiClient {
         100,
         Text('Core development work'),
         Status.pending,
-        TimeStamp(DateTime.now(), null, null, null),
+        TimeStamp(DateTime.now(), DateTime.now(), DateTime.now(), DateTime.now()),
       ),
       StageModel(
         3,
@@ -32,7 +47,7 @@ class ApiClient {
         104,
         Text('Testing and QA'),
         Status.pending,
-        TimeStamp(DateTime.now(), null, null, null),
+        TimeStamp(DateTime.now(), DateTime.now(), DateTime.now(), DateTime.now()),
       ),
     ];
   }
@@ -41,16 +56,14 @@ class ApiClient {
     // Giả lập độ trễ mạng
     await Future.delayed(const Duration(milliseconds: 400));
     if (path == '/stages') {
-      // Giả lập gọi API server --> lấy dữ liệu
       return stage
           .map(
             (s) => {
-              // Dưới đây là các trường từ lớp Stage của bạn
               'id': s.id,
               'name': s.name,
               'projectId': s.projectId,
-              'description': s.description.data,
-              'status': s.status.toString(),
+              'description': s.description.data ?? '',
+              'status': s.status.toString().split('.').last,
               'timestamps': {
                 'createdAt': s.timestamps.createdAt.toIso8601String(),
                 'updatedAt': s.timestamps.updatedAt?.toIso8601String(),
@@ -59,7 +72,7 @@ class ApiClient {
               },
             },
           )
-          .toList(); // Dữ liệu stage --> sẽ được map thành StageModel
+          .toList(); 
     }
     throw Exception('Unknown path: $path');
   }
@@ -68,13 +81,27 @@ class ApiClient {
     // Giả lập độ trễ mạng
     await Future.delayed(const Duration(milliseconds: 400));
     if (path == '/stages') {
+      final timestampsMap = body['timestamps'] as Map<String, dynamic>? ?? {};
       final newStage = Stage(
-        body['id'] ?? DateTime.now().millisecondsSinceEpoch,
-        body['name'],
-        body['projectId'],
-        Text(body['description']),
-        Status.pending,
-        TimeStamp(DateTime.now(), null, null, null),
+        body['id'] as int,
+        body['name'] as String,
+        body['projectId'] as int,
+        Text(body['description'] as String? ?? ''),
+        _parseStatus(body['status'] as String? ?? 'pending'),
+        TimeStamp(
+          timestampsMap['createdAt'] != null
+              ? DateTime.parse(timestampsMap['createdAt'] as String)
+              : DateTime.now(),
+          timestampsMap['updatedAt'] != null
+              ? DateTime.parse(timestampsMap['updatedAt'] as String)
+              : null,
+          timestampsMap['startDate'] != null
+              ? DateTime.parse(timestampsMap['startDate'] as String)
+              : null,
+          timestampsMap['endDate'] != null
+              ? DateTime.parse(timestampsMap['endDate'] as String)
+              : null,
+        ),
       );
 
       stage.add(newStage);
@@ -82,8 +109,8 @@ class ApiClient {
         'id': newStage.id,
         'name': newStage.name,
         'projectId': newStage.projectId,
-        'description': newStage.description.data,
-        'status': newStage.status.toString(),
+        'description': newStage.description.data ?? '',
+        'status': newStage.status.toString().split('.').last,
         'timestamps': {
           'createdAt': newStage.timestamps.createdAt.toIso8601String(),
           'updatedAt': newStage.timestamps.updatedAt?.toIso8601String(),
@@ -110,16 +137,27 @@ class ApiClient {
       if (index == -1) {
         throw Exception('Stage not found');
       }
-      final oldStage = stage[index];
+      final timestampsMap = body['timestamps'] as Map<String, dynamic>? ?? {};
       final updatedStage = Stage(
         id, // Giữ nguyên ID
-        body['name'] ?? oldStage.name,
-        body['projectId'] ?? oldStage.projectId,
-        body['description'] != null
-            ? Text(body['description'])
-            : oldStage.description,
-        oldStage.status,
-        oldStage.timestamps,
+        body['name'] as String,
+        body['projectId'] as int,
+        Text(body['description'] as String? ?? ''),
+        _parseStatus(body['status'] as String? ?? 'pending'),
+        TimeStamp(
+          timestampsMap['createdAt'] != null
+              ? DateTime.parse(timestampsMap['createdAt'] as String)
+              : DateTime.now(),
+          timestampsMap['updatedAt'] != null
+              ? DateTime.parse(timestampsMap['updatedAt'] as String)
+              : null,
+          timestampsMap['startDate'] != null
+              ? DateTime.parse(timestampsMap['startDate'] as String)
+              : null,
+          timestampsMap['endDate'] != null
+              ? DateTime.parse(timestampsMap['endDate'] as String)
+              : null,
+        ),
       );
 
       stage[index] = updatedStage;
@@ -127,8 +165,8 @@ class ApiClient {
         'id': updatedStage.id,
         'name': updatedStage.name,
         'projectId': updatedStage.projectId,
-        'description': updatedStage.description.data,
-        'status': updatedStage.status.toString(),
+        'description': updatedStage.description.data ?? '',
+        'status': updatedStage.status.toString().split('.').last,
         'timestamps': {
           'createdAt': updatedStage.timestamps.createdAt.toIso8601String(),
           'updatedAt': updatedStage.timestamps.updatedAt?.toIso8601String(),

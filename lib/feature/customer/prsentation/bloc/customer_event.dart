@@ -5,11 +5,10 @@ abstract class CustomerEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-
 class LoadCustomersEvent extends CustomerEvent {}
 
 class CreateCustomerEvent extends CustomerEvent {
-  final String id;
+  final int id;
   final String name;
   final String phone;
   final String email;
@@ -21,7 +20,7 @@ class CreateCustomerEvent extends CustomerEvent {
 }
 
 class UpdateCustomerEvent extends CustomerEvent {
-  final String id;
+  final int id;
   final String name;
   final String phone;
   final String email;
@@ -33,11 +32,10 @@ class UpdateCustomerEvent extends CustomerEvent {
 }
 
 class DeleteCustomerEvent extends CustomerEvent {
-  final String id;
+  final int id;
 
   DeleteCustomerEvent(this.id);
 
   @override
   List<Object?> get props => [id];
 }
-

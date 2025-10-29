@@ -9,7 +9,7 @@ class RemoteDatasource
 
   Future<List<StageModel>> getAllStages() async {
     // Implementation to fetch stages from remote API
-    final data = this.apiClient.get('/stages') as List<dynamic>;
+    final data = await this.apiClient.get('/stages') as List<dynamic>; // ← Thêm await
     return data.map((e) => StageModel.fromJson(e as Map<String, dynamic>)).toList();
   }
 
@@ -17,9 +17,10 @@ class RemoteDatasource
     final data = await apiClient.post('/stages', stage.toJson());
     return StageModel.fromJson(data as Map<String, dynamic>);
   }
+
   Future<StageModel> updateStage(StageModel stage) async {
     final data = await apiClient.put('/stages/${stage.id}', stage.toJson());
-    return StageModel.fromJson(data);
+    return StageModel.fromJson(data as Map<String, dynamic>); // ← Thêm as Map<String, dynamic>
   }
 
   Future<void> deleteStage(String id) async {
