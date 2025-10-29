@@ -28,11 +28,16 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
     LoadCustomersEvent event,
     Emitter<CustomerState> emit,
   ) async {
+    print('LoadCustomersEvent received');
     emit(CustomerLoadingState());
     try {
+      print('Calling getCustomerUsecase');
       final customers = await getCustomerUsecase.call();
+      print('Received customers: $customers');
       emit(CustomerLoadedState(List.from(customers))); // Tạo bản sao
-    } catch (e) {
+    } catch (e, stack) {
+      print('Error loading customers: $e');
+      print('Stack trace: $stack');
       emit(CustomerErrorState('Không thể tải danh sách khách hàng: $e'));
     }
   }
@@ -84,12 +89,9 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
     try {
       await deleteCustomerUsecase.call(event.id);
       final customers = await getCustomerUsecase.call();
-      emit(CustomerLoadedState(List.from(customers))); 
+      emit(CustomerLoadedState(List.from(customers)));
     } catch (e, stackTrace) {
       emit(CustomerErrorState('Không thể xóa khách hàng: $e'));
     }
   }
-
-  
-    
 }
