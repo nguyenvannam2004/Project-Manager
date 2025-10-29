@@ -4,7 +4,7 @@ import 'package:project_manager/core/network/auth/ApiFromBackend.dart';
 import 'package:project_manager/core/network/auth/IApiclient.dart';
 import 'package:project_manager/feature/auth/presentation/pages/registerpage.dart';
 import 'package:project_manager/feature/customer/prsentation/bloc/customer_bloc.dart';
-// import 'package:project_manager/core/network/customer/apiclient.dart';
+
 import 'package:project_manager/feature/auth/data/datasource/AuthRemoteDataSource.dart';
 import 'package:project_manager/feature/auth/data/repository_ipl/authrepository_ipl.dart';
 import 'package:project_manager/feature/auth/domain/repository/AuthRepository.dart';
@@ -20,13 +20,7 @@ import 'package:project_manager/feature/customer/domain/usecase/createcustomer_u
 import 'package:project_manager/feature/customer/domain/usecase/deletecustomer_usecase.dart';
 import 'package:project_manager/feature/customer/domain/usecase/getcustomer_usecase.dart';
 import 'package:project_manager/feature/customer/domain/usecase/updatecustomerusecase.dart';
-// import 'package:project_manager/feature/customer/data/datasource/remotedatasource.dart';
-// import 'package:project_manager/feature/customer/data/repository_ipl/customerrepository_ipl.dart';
-// import 'package:project_manager/feature/customer/domain/repository/customerrepository.dart';
-// import 'package:project_manager/feature/customer/domain/usecase/createcustomer_usecase.dart';
-// import 'package:project_manager/feature/customer/domain/usecase/deletecustomer_usecase.dart';
-// import 'package:project_manager/feature/customer/domain/usecase/getcustomer_usecase.dart';
-// import 'package:project_manager/feature/customer/domain/usecase/updatecustomerusecase.dart';
+
 
 void main() {
   
@@ -139,7 +133,7 @@ class MyApp extends StatelessWidget {
           routes: {
             '/register': (context) => RegisterPage(), 
           },
-          
+
         ),
       );
   }
