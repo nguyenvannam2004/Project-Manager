@@ -1,80 +1,79 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:project_manager/core/network/customer/apiclient.dart';
-import 'package:project_manager/feature/customer/data/datasource/remotedatasource.dart';
-import 'package:project_manager/feature/customer/data/repository_ipl/customerrepository_ipl.dart';
-import 'package:project_manager/feature/customer/domain/usecase/createcustomer_usecase.dart';
-import 'package:project_manager/feature/customer/domain/usecase/deletecustomer_usecase.dart';
-import 'package:project_manager/feature/customer/domain/usecase/getcustomer_usecase.dart';
-import 'package:project_manager/feature/customer/domain/usecase/updatecustomerusecase.dart';
-import 'package:project_manager/feature/customer/prsentation/bloc/customer_bloc.dart';
-import 'package:project_manager/feature/customer/prsentation/bloc/customer_event.dart';
-import 'package:project_manager/feature/customer/prsentation/pages/customer_page.dart';
+import 'package:project_manager/core/network/project/apiclient.dart';
+import 'package:project_manager/feature/project/data/datasource/remotedatasource.dart';
+import 'package:project_manager/feature/project/data/repository_ipl/projectrepository_ipl.dart';
+import 'package:project_manager/feature/project/domain/usecase/createproject_usecase.dart';
+import 'package:project_manager/feature/project/domain/usecase/deleteproject_usecase.dart';
+import 'package:project_manager/feature/project/domain/usecase/getproject_usecase.dart';
+import 'package:project_manager/feature/project/domain/usecase/updateproject_usecase.dart';
+import 'package:project_manager/feature/project/presentation/bloc/project_bloc.dart';
+import 'package:project_manager/feature/project/presentation/bloc/project_event.dart';
+import 'package:project_manager/feature/project/presentation/pages/project_page.dart';
 
 void main() {
-  final ApiClient apiClient = ApiClient();
+  final Apiclient apiClient = Apiclient();
   final RemoteDataSource remoteDataSource = RemoteDataSource(apiClient);
-  final CustomerRepositoryIpl customerRepository = CustomerRepositoryIpl(
+  final ProjectRepositoryIpl projectRepository = ProjectRepositoryIpl(
     remoteDataSource,
   );
-  final GetCustomerUsecase getcustomerUsecase = GetCustomerUsecase(
-    customerRepository,
+  final GetProjectUsecase getProjectUsecase = GetProjectUsecase(
+    projectRepository,
   );
-  final DeleteCustomerUsecase deletecustomerUsecase = DeleteCustomerUsecase(
-    customerRepository,
+  final DeleteProjectUsecase deleteProjectUsecase = DeleteProjectUsecase(
+    projectRepository,
   );
-  final CreatecustomerUsecase createcustomerUsecase = CreatecustomerUsecase(
-    customerRepository,
+  final CreateProjectUsecase createProjectUsecase = CreateProjectUsecase(
+    projectRepository,
   );
-  final UpdateCustomerUsecase updatecustomerUsecase = UpdateCustomerUsecase(
-    customerRepository,
+  final UpdateProjectUsecase updateProjectUsecase = UpdateProjectUsecase(
+    projectRepository,
   );
   runApp(
     MyApp(
-      getcustomerUsecase: getcustomerUsecase,
-      deletecustomerUsecase: deletecustomerUsecase,
-      createcustomerUsecase: createcustomerUsecase,
-      updatecustomerUsecase: updatecustomerUsecase,
+      getProjectUsecase: getProjectUsecase,
+      deleteProjectUsecase: deleteProjectUsecase,
+      createProjectUsecase: createProjectUsecase,
+      updateProjectUsecase: updateProjectUsecase,
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  final GetCustomerUsecase getcustomerUsecase;
-  final DeleteCustomerUsecase deletecustomerUsecase;
-  final CreatecustomerUsecase createcustomerUsecase;
-  final UpdateCustomerUsecase updatecustomerUsecase;
+  final GetProjectUsecase getProjectUsecase;
+  final DeleteProjectUsecase deleteProjectUsecase;
+  final CreateProjectUsecase createProjectUsecase;
+  final UpdateProjectUsecase updateProjectUsecase;
   const MyApp({
     super.key,
-    required this.getcustomerUsecase,
-    required this.deletecustomerUsecase,
-    required this.createcustomerUsecase,
-    required this.updatecustomerUsecase,
+    required this.getProjectUsecase,
+    required this.deleteProjectUsecase,
+    required this.createProjectUsecase,
+    required this.updateProjectUsecase,
   });
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        
         BlocProvider(
-          create: (context) => CustomerBloc(
-            getCustomerUsecase: getcustomerUsecase,
-            createCustomerUsecase: createcustomerUsecase,
-            updateCustomerUsecase: updatecustomerUsecase,
-            deleteCustomerUsecase: deletecustomerUsecase,
-          )..add(LoadCustomersEvent()),
+          create: (context) => ProjectBloc(
+            getProjectUsecase: getProjectUsecase,
+            createProjectUsecase: createProjectUsecase,
+            updateProjectUsecase: updateProjectUsecase,
+            deleteProjectUsecase: deleteProjectUsecase,
+          )..add(LoadProjectsEvent()),
         ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Customer Manager',
+        title: 'Project Manager',
         theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
-        home: CustomerPage(
-          getCustomerUsecase: getcustomerUsecase,
-          deleteCustomerUsecase: deletecustomerUsecase,
-          createCustomerUsecase: createcustomerUsecase,
-          updateCustomerUsecase: updatecustomerUsecase,
+        home: ProjectPage(
+          getProjectUsecase: getProjectUsecase,
+          deleteProjectUsecase: deleteProjectUsecase,
+          createProjectUsecase: createProjectUsecase,
+          updateProjectUsecase: updateProjectUsecase,
         ),
       ),
     );
