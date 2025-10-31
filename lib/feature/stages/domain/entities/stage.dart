@@ -6,14 +6,10 @@ class Stage{
   final int id;
   final String name;
   final int projectId;
-  final Text description;
+  final String description;
   final Status status;
   final TimeStamp timestamps;
 
   Stage(this.id, this.name, this.projectId, this.description, this.status, this.timestamps);
-  
-
- 
-
  
 }

@@ -5,7 +5,7 @@ import 'package:project_manager/feature/stages/domain/repository/stage_repositor
 
 class StagesRepositoryIpl extends StageRepository
 {
-  final RemoteDatasource remoteDatasource;
+  final RemoteDatasourceStage remoteDatasource;
 
   StagesRepositoryIpl(this.remoteDatasource);
   
@@ -30,5 +30,7 @@ class StagesRepositoryIpl extends StageRepository
     final data = StageModel(stage.id, stage.name, stage.projectId, stage.description, stage.status, stage.timestamps);
     return this.remoteDatasource.updateStage(data);
   }
+  
+  
 
 }

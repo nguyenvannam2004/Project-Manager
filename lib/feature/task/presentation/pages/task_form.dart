@@ -1,57 +1,72 @@
+
+
 import 'package:flutter/material.dart';
+import 'package:project_manager/feature/task/presentation/bloc/task_bloc.dart';
+import 'package:project_manager/feature/task/presentation/bloc/task_event.dart';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:project_manager/core/entities/status.dart';
 import 'package:project_manager/core/entities/timestamp.dart';
 import 'package:project_manager/feature/task/domain/entities/task.dart';
-import 'package:project_manager/feature/task/presentation/bloc/task_bloc.dart';
-import 'package:project_manager/feature/task/presentation/bloc/task_event.dart';
-import 'package:intl/intl.dart'; // Cần thêm thư viện intl để format ngày
 
-class TaskFormPage extends StatefulWidget {
-  // 1. Giống file mẫu, nhận 1 task (nếu là chỉnh sửa)
+// Tên class là TaskForm (không có Dialog)
+class TaskForm extends StatefulWidget {
   final Task? editingTask;
 
-  const TaskFormPage({super.key, this.editingTask});
+  const TaskForm({
+    super.key,
+    this.editingTask,
+  });
 
   @override
-  State<TaskFormPage> createState() => _TaskFormPageState();
+  State<TaskForm> createState() => _TaskFormState();
 }
 
-class _TaskFormPageState extends State<TaskFormPage> {
+class _TaskFormState extends State<TaskForm> {
   final _formKey = GlobalKey<FormState>();
-
-  // 2. Tạo controller cho TẤT CẢ các trường
+  // Thêm Controller cho các trường của Task
   late TextEditingController _nameController;
   late TextEditingController _descriptionController;
   late TextEditingController _stageIdController;
   late TextEditingController _createByController;
 
-  Status _selectedStatus = Status.todo; // Mặc định là 'todo'
   DateTime? _startDate;
   DateTime? _endDate;
-  DateTime? _createdAt; // Cần lưu ngày tạo cũ cho việc update
+  DateTime? _createdAt; // Dùng để lưu ngày tạo gốc khi update
+  Status _selectedStatus = Status.todo; // Mặc định cho Task
+  final _dateFormat = DateFormat('dd/MM/yyyy');
 
   @override
   void initState() {
     super.initState();
-    // 3. Gán giá trị ban đầu (nếu là update)
+    _initForm();
+  }
+
+  void _initForm() {
     final task = widget.editingTask;
     _nameController = TextEditingController(text: task?.name ?? '');
     _descriptionController =
         TextEditingController(text: task?.description ?? '');
-  _stageIdController = TextEditingController(
-    text: task != null ? task.stagedId.toString() : '');
-  _createByController = TextEditingController(
-    text: task != null ? task.createBy.toString() : '');
-
-    _selectedStatus = task?.status ?? Status.todo;
+    // Thêm 2 trường mới
+    _stageIdController =
+        TextEditingController(text: task?.stagedId.toString() ?? '');
+    _createByController =
+        TextEditingController(text: task?.createBy.toString() ?? '');
     
-    // Giả định timestamp không null (theo sửa lỗi ở trên)
-  // Use safe navigation to avoid calling members on a null Task
-  // Note: Task.timeStamp is non-nullable, so only the first null-aware operator is needed
-  _startDate = task?.timeStamp.startDate;
-  _endDate = task?.timeStamp.endDate;
-  _createdAt = task?.timeStamp.createdAt;
+    // Giả định timestamp không null
+    _startDate = task?.timeStamp.startDate;
+    _endDate = task?.timeStamp.endDate;
+    _createdAt = task?.timeStamp.createdAt; // Lưu lại ngày tạo
+    _selectedStatus = task?.status ?? Status.todo;
+  }
+
+  @override
+  void didUpdateWidget(covariant TaskForm oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.editingTask != oldWidget.editingTask) {
+      _initForm(); // Tải lại form nếu task truyền vào thay đổi
+    }
   }
 
   @override
@@ -63,113 +78,13 @@ class _TaskFormPageState extends State<TaskFormPage> {
     super.dispose();
   }
 
-  // 4. Hàm _onSave (Logic chính)
-  void _onSave() {
-    if (_formKey.currentState!.validate()) {
-      // Lấy tất cả giá trị từ form
-      final name = _nameController.text.trim();
-      final description = _descriptionController.text.trim();
-      
-      // Dùng tryParse để an toàn
-      final stageId = int.tryParse(_stageIdController.text.trim());
-      final createBy = int.tryParse(_createByController.text.trim());
-
-      // Kiểm tra các giá trị bắt buộc
-      if (name.isEmpty ||
-          description.isEmpty ||
-          stageId == null ||
-          createBy == null ||
-          _startDate == null ||
-          _endDate == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Vui lòng điền đầy đủ thông tin')),
-        );
-        return;
-      }
-      
-      // Kiểm tra logic ngày: start phải <= end
-      if (_startDate!.isAfter(_endDate!)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ngày bắt đầu phải trước hoặc bằng ngày kết thúc')),
-        );
-        return;
-      }
-
-      // Kiểm tra số hợp lệ cho stageId và createBy
-      if (stageId <= 0 || createBy <= 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Stage ID và Người tạo phải là số nguyên dương')),
-        );
-        return;
-      }
-
-      // Hạn chế độ dài tên/miêu tả
-      if (name.length > 200 || description.length > 1000) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tên hoặc mô tả quá dài')),
-        );
-        return;
-      }
-
-      final now = DateTime.now();
-
-      if (widget.editingTask == null) {
-        // --- THÊM MỚI ---
-        final newId = DateTime.now().millisecondsSinceEpoch;
-        final timeStamp = TimeStamp(
-          now, // createdAt
-          now, // updatedAt
-          _startDate!,
-          _endDate!,
-        );
-
-        context.read<TaskBloc>().add(
-              CreateTaskEvent(
-                newId,
-                stageId,
-                name,
-                description,
-                _selectedStatus,
-                createBy,
-                timeStamp,
-              ),
-            );
-      } else {
-        // --- CẬP NHẬT ---
-        // Khi update, dùng ngày tạo cũ, nhưng cập nhật 'updatedAt'
-        final timeStamp = TimeStamp(
-          _createdAt!, // createdAt (Giữ ngày tạo gốc)
-          now, // updatedAt (Cập nhật ngày mới)
-          _startDate!,
-          _endDate!,
-        );
-
-        context.read<TaskBloc>().add(
-              UpdateTaskEvent(
-                widget.editingTask!.id, // Dùng ID cũ
-                stageId,
-                name,
-                description,
-                _selectedStatus,
-                createBy,
-                timeStamp,
-              ),
-            );
-      }
-      Navigator.of(context).pop();
-    }
-  }
-
-  // Hàm trợ giúp chọn ngày
-  Future<void> _pickDate(bool isStartDate) async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
+  Future<void> _selectDate(BuildContext context, bool isStartDate) async {
+    final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: (isStartDate ? _startDate : _endDate) ?? now,
-      firstDate: now.subtract(Duration(days: 365)),
-      lastDate: now.add(Duration(days: 365)),
+      initialDate: (isStartDate ? _startDate : _endDate) ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
     );
-
     if (picked != null) {
       setState(() {
         if (isStartDate) {
@@ -181,118 +96,411 @@ class _TaskFormPageState extends State<TaskFormPage> {
     }
   }
 
+  // --- Các hàm helper cho Status (Giống hệt file mẫu) ---
+
+  String _getStatusLabel(Status status) {
+    switch (status) {
+      case Status.todo:
+        return 'Cần làm';
+      case Status.inProgress:
+        return 'Đang làm';
+      case Status.completed:
+        return 'Hoàn thành';
+      case Status.cancelled:
+        return 'Đã hủy';
+      default:
+        return status.toString().split('.').last; 
+    }
+  }
+
+  // Tùy chỉnh màu cho Status
+  Color _getStatusColor(Status status) {
+    switch (status) {
+      case Status.todo:
+        return Colors.orange;
+      case Status.inProgress:
+        return Colors.blue;
+      case Status.completed:
+        return Colors.green;
+      case Status.cancelled:
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  void _onSave() {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_startDate == null || _endDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng chọn ngày bắt đầu và kết thúc')),
+      );
+      return;
+    }
+
+    final name = _nameController.text.trim();
+    final description = _descriptionController.text.trim();
+    final stageId = int.tryParse(_stageIdController.text.trim());
+    final createBy = int.tryParse(_createByController.text.trim());
+
+    if (stageId == null || createBy == null) {
+       ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Stage ID và Người tạo ID phải là số')),
+      );
+      return;
+    }
+
+    final now = DateTime.now();
+
+    if (widget.editingTask == null) {
+      // --- THÊM MỚI TASK ---
+      final newId = DateTime.now().millisecondsSinceEpoch;
+      final timeStamp = TimeStamp(
+        now, // createdAt
+        now, // updatedAt
+        _startDate!,
+        _endDate!,
+      );
+      context.read<TaskBloc>().add(
+            CreateTaskEvent(
+              newId,
+              stageId,
+              name,
+              description,
+              _selectedStatus,
+              createBy,
+              timeStamp,
+            ),
+          );
+    } else {
+      // --- CẬP NHẬT TASK ---
+      final timeStamp = TimeStamp(
+        _createdAt!, // Giữ ngày tạo gốc
+        now, // Cập nhật ngày mới
+        _startDate!,
+        _endDate!,
+      );
+      context.read<TaskBloc>().add(
+            UpdateTaskEvent(
+              widget.editingTask!.id,
+              stageId,
+              name,
+              description,
+              _selectedStatus,
+              createBy,
+              timeStamp,
+            ),
+          );
+    }
+
+    Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
-    // 5. Trả về 1 trang (Scaffold) thay vì Dialog
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.editingTask == null ? "Thêm Task mới" : "Chỉnh sửa Task",
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.save),
-            onPressed: _onSave,
-          )
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: "Tên Task"),
-                validator: (v) =>
-                    v == null || v.isEmpty ? "Không được để trống" : null,
-              ),
-              SizedBox(height: 12),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(labelText: "Mô tả"),
-                validator: (v) =>
-                    v == null || v.isEmpty ? "Không được để trống" : null,
-              ),
-              SizedBox(height: 12),
-              TextFormField(
-                controller: _stageIdController,
-                decoration: const InputDecoration(labelText: "Stage ID"),
-                keyboardType: TextInputType.number,
-                validator: (v) =>
-                    v == null || v.isEmpty ? "Không được để trống" : null,
-              ),
-              SizedBox(height: 12),
-              TextFormField(
-                controller: _createByController,
-                decoration: const InputDecoration(labelText: "Người tạo (ID)"),
-                keyboardType: TextInputType.number,
-                validator: (v) =>
-                    v == null || v.isEmpty ? "Không được để trống" : null,
-              ),
-              SizedBox(height: 12),
-              // Dropdown cho Status
-              DropdownButtonFormField<Status>(
-                value: _selectedStatus,
-                decoration: InputDecoration(labelText: "Trạng thái"),
-                items: Status.values.map((status) {
-                  return DropdownMenuItem(
-                    value: status,
-                    child: Text(status.toString().split('.').last), // Hiển thị 'todo', 'done'
-                  );
-                }).toList(),
-                onChanged: (newValue) {
-                  if (newValue != null) {
-                    setState(() {
-                      _selectedStatus = newValue;
-                    });
-                  }
-                },
-              ),
-              SizedBox(height: 20),
-              // Chọn ngày
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    _startDate == null
-                        ? "Chưa chọn ngày bắt đầu"
-                        : "Bắt đầu: ${DateFormat('dd/MM/yyyy').format(_startDate!)}",
-                  ),
-                  TextButton(
-                    child: Text("Chọn ngày"),
-                    onPressed: () => _pickDate(true),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    _endDate == null
-                        ? "Chưa chọn ngày kết thúc"
-                        : "Kết thúc: ${DateFormat('dd/MM/yyyy').format(_endDate!)}",
-                  ),
-                  TextButton(
-                    child: Text("Chọn ngày"),
-                    onPressed: () => _pickDate(false),
-                  ),
-                ],
-              ),
-              SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: _onSave,
-                child: Text("Lưu Task"),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: Size(double.infinity, 50),
+    final colorScheme = Theme.of(context).colorScheme;
+    final isEditing = widget.editingTask != null;
+
+    // --- Cấu trúc UI y hệt file mẫu ---
+    // Vì đây là file form, ta trả về Dialog
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 500), // Giới hạn chiều rộng
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
                 ),
               ),
-            ],
-          ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      isEditing ? Icons.edit_rounded : Icons.add_rounded,
+                      color: colorScheme.onPrimary,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isEditing ? "Chỉnh sửa Task" : "Thêm Task mới",
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.onPrimaryContainer,
+                              ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          isEditing
+                              ? "Cập nhật thông tin Task"
+                              : "Tạo một Task mới",
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onPrimaryContainer.withOpacity(0.7),
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close_rounded),
+                    color: colorScheme.onPrimaryContainer,
+                  ),
+                ],
+              ),
+            ),
+
+            // Form Content
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Tên Task
+                      TextFormField(
+                        controller: _nameController,
+                        decoration: _buildInputDecoration(
+                          context,
+                          labelText: "Tên Task",
+                          hintText: "Nhập tên Task",
+                        ),
+                        validator: (v) =>
+                            v == null || v.isEmpty ? "Vui lòng nhập tên" : null,
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Mô tả
+                      TextFormField(
+                        controller: _descriptionController,
+                        decoration: _buildInputDecoration(
+                          context,
+                          labelText: "Mô tả",
+                          hintText: "Nhập mô tả chi tiết",
+                          alignLabelWithHint: true,
+                        ),
+                        maxLines: 4,
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Thêm 2 trường mới cho Task
+                      Row(
+                         children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: _stageIdController,
+                                decoration: _buildInputDecoration(
+                                  context,
+                                  labelText: "Stage ID",
+                                  hintText: "Nhập ID",
+                                ),
+                                keyboardType: TextInputType.number,
+                                validator: (v) =>
+                                    v == null || v.isEmpty ? "Nhập ID" : null,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                             Expanded(
+                              child: TextFormField(
+                                controller: _createByController,
+                                decoration: _buildInputDecoration(
+                                  context,
+                                  labelText: "Người tạo (ID)",
+                                  hintText: "Nhập ID",
+                                ),
+                                keyboardType: TextInputType.number,
+                                validator: (v) =>
+                                    v == null || v.isEmpty ? "Nhập ID" : null,
+                              ),
+                            ),
+                         ],
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Ngày bắt đầu và kết thúc (Copy y hệt)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              readOnly: true,
+                              onTap: () => _selectDate(context, true),
+                              decoration: _buildInputDecoration(
+                                context,
+                                labelText: "Ngày bắt đầu",
+                                hintText: "Chọn ngày",
+                                suffixIcon: Icons.calendar_today_rounded,
+                              ),
+                              controller: TextEditingController(
+                                text: _startDate == null
+                                    ? ""
+                                    : _dateFormat.format(_startDate!),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextFormField(
+                              readOnly: true,
+                              onTap: () => _selectDate(context, false),
+                              decoration: _buildInputDecoration(
+                                context,
+                                labelText: "Ngày kết thúc",
+                                hintText: "Chọn ngày",
+                                suffixIcon: Icons.calendar_today_rounded,
+                              ),
+                              controller: TextEditingController(
+                                text: _endDate == null
+                                    ? ""
+                                    : _dateFormat.format(_endDate!),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Trạng thái (Copy y hệt, chỉ đổi 'Status.values')
+                      DropdownButtonFormField<Status>(
+                        value: _selectedStatus,
+                        decoration: _buildInputDecoration(
+                          context,
+                          labelText: "Trạng thái",
+                          hintText: "Chọn trạng thái",
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
+                        items: Status.values.map((status) { // Dùng Status của Task
+                          return DropdownMenuItem(
+                            value: status,
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 12,
+                                  height: 12,
+                                  decoration: BoxDecoration(
+                                    color: _getStatusColor(status),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Text(_getStatusLabel(status)),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() {
+                              _selectedStatus = value;
+                            });
+          }
+        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Actions (Copy y hệt)
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text("Hủy"),
+                  ),
+                  const SizedBox(width: 12),
+                  FilledButton.icon(
+                    onPressed: _onSave,
+                    icon: const Icon(Icons.check_rounded),
+                    label: Text(isEditing ? "Cập nhật" : "Tạo mới"),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+
+  // Hàm helper tạo style cho TextFormField (giống mẫu)
+  InputDecoration _buildInputDecoration(
+    BuildContext context, {
+    required String labelText,
+    required String hintText,
+    IconData? suffixIcon,
+    bool alignLabelWithHint = false,
+    EdgeInsetsGeometry? contentPadding = const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return InputDecoration(
+      labelText: labelText,
+      hintText: hintText,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: colorScheme.outline.withOpacity(0.5)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: colorScheme.primary, width: 2),
+      ),
+      filled: true,
+      fillColor: colorScheme.surface,
+      alignLabelWithHint: alignLabelWithHint,
+      contentPadding: contentPadding,
+      suffixIcon: suffixIcon != null
+          ? Icon(
+              suffixIcon,
+              color: colorScheme.primary,
+              size: 20,
+            )
+          : null,
+    );
+  }
 }
+

@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:project_manager/core/entities/exception.dart';
 import 'package:project_manager/feature/project/domain/usecase/createproject_usecase.dart';
 import 'package:project_manager/feature/project/domain/usecase/deleteproject_usecase.dart';
 import 'package:project_manager/feature/project/domain/usecase/getproject_usecase.dart';
@@ -56,6 +57,8 @@ class ProjectBloc extends Bloc<ProjectEvent, ProjectState> {
       );
       final projects = await getProjectUsecase.call();
       emit(ProjectLoadedState(List.from(projects)));
+    } on ForbiddenException catch (e) {
+      emit(ProjectForbiddenState(e.message)); // <- Bắt riêng Forbidden
     } catch (e) {
       emit(ProjectErrorState('Không thể tạo dự án: $e'));
     }
@@ -80,6 +83,8 @@ class ProjectBloc extends Bloc<ProjectEvent, ProjectState> {
       );
       final projects = await getProjectUsecase.call();
       emit(ProjectLoadedState(List.from(projects)));
+    } on ForbiddenException catch (e) {
+      emit(ProjectForbiddenState(e.message)); // <- Bắt riêng Forbidden
     } catch (e) {
       emit(ProjectErrorState('Không thể cập nhật dự án: $e'));
     }
@@ -94,6 +99,8 @@ class ProjectBloc extends Bloc<ProjectEvent, ProjectState> {
       await deleteProjectUsecase.call(event.id);
       final projects = await getProjectUsecase.call();
       emit(ProjectLoadedState(List.from(projects)));
+    } on ForbiddenException catch (e) {
+      emit(ProjectForbiddenState(e.message)); // <- Bắt riêng Forbidden
     } catch (e) {
       emit(ProjectErrorState('Không thể xóa dự án: $e'));
     }
