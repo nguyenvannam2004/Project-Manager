@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:project_manager/core/entities/exception.dart';
 import 'package:project_manager/core/network/auth/IApiclient.dart';
 
 class ApiClientfrombackend extends IApiClient {
@@ -20,16 +21,14 @@ class ApiClientfrombackend extends IApiClient {
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           _cachedToken ??= await storage.read(key: 'token');
-          print(
-            'Interceptor - Current token: $_cachedToken',
-          ); 
+          print('Interceptor - Current token: $_cachedToken');
           if (_cachedToken != null) {
             options.headers['Authorization'] = 'Bearer $_cachedToken';
             print(
               'Added Authorization header: ${options.headers['Authorization']}',
-            ); 
+            );
           } else {
-            print('No token available for request'); 
+            print('No token available for request');
           }
           return handler.next(options);
         },
@@ -41,11 +40,8 @@ class ApiClientfrombackend extends IApiClient {
   @override
   Future<dynamic> get(String path) async {
     try {
-      print('Making GET request to: $path');
-      print('Current token: $_cachedToken');
       final response = await dio.get(path);
-      print('Response status: ${response.statusCode}');
-      print('Response data: ${response.data}');
+
       return response.data;
     } catch (e) {
       print('Error in GET request: $e');
@@ -73,7 +69,25 @@ class ApiClientfrombackend extends IApiClient {
       (await dio.put(path, data: body)).data;
 
   @override
-  Future<void> delete(String path) async => await dio.delete(path);
+  Future<void> delete(String path) async
+  //=> await dio.delete(path);
+  {
+      try {
+      final response = await dio.delete(path);
+
+      if (response.statusCode == 403) {
+        throw ForbiddenException('Bạn không có quyền thực hiện hành động này');
+      } else if (response.statusCode != 200 && response.statusCode != 204) {
+        throw Exception('DELETE $path failed with status ${response.statusCode}');
+      }
+      } on DioError catch (e) {
+      if (e.response?.statusCode == 403) {
+        throw ForbiddenException('Bạn không có quyền thực hiện hành động này');
+      }
+      // ném lại các lỗi khác
+      rethrow;
+    }
+  }
 
   @override
   Future<void> setToken(String token) async {

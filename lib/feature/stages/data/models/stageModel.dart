@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:project_manager/core/entities/status.dart';
 import 'package:project_manager/core/entities/timestamp.dart';
 import 'package:project_manager/feature/stages/domain/entities/stage.dart';
@@ -10,33 +9,19 @@ class StageModel extends Stage {
     super.projectId,
     super.description,
     super.status,
-    super.timestamps,
+    super.timestamp,
   );
 
   factory StageModel.fromJson(Map<String, dynamic> json) {
-    // Xử lý cấu trúc JSON từ ApiClient
-    final timestampsData = json['timestamps'] as Map<String, dynamic>? ?? {};
-    
     return StageModel(
       json['id'] as int? ?? 0,
       json['name'] as String? ?? '',
       json['projectId'] as int? ?? 0,
-      Text(json['description'] as String? ?? ''),
-      _parseStatus(json['status'] as String? ?? 'pending'),
-      TimeStamp(
-        timestampsData['createdAt'] != null
-            ? DateTime.parse(timestampsData['createdAt'] as String)
-            : DateTime.now(),
-        timestampsData['updatedAt'] != null
-            ? DateTime.parse(timestampsData['updatedAt'] as String)
-            : null,
-        timestampsData['startDate'] != null
-            ? DateTime.parse(timestampsData['startDate'] as String)
-            : null,
-        timestampsData['endDate'] != null
-            ? DateTime.parse(timestampsData['endDate'] as String)
-            : null,
-      ),
+      json['description'] as String? ?? '',
+      _parseStatus(json['status']),
+      json['timeStamp'] != null
+          ? TimeStamp.fromJson(json['timeStamp'] as Map<String, dynamic>)
+          : TimeStamp(DateTime.now(), null, null, null),
     );
   }
 
@@ -44,30 +29,15 @@ class StageModel extends Stage {
         'id': id,
         'name': name,
         'projectId': projectId,
-        'description': description.data ?? '',
-        'status': status.toString().split('.').last,
-        'timestamps': {
-          'createdAt': timestamps.createdAt.toIso8601String(),
-          'updatedAt': timestamps.updatedAt?.toIso8601String(),
-          'startDate': timestamps.startDate?.toIso8601String(),
-          'endDate': timestamps.endDate?.toIso8601String(),
-        },
+        'description': description,
+        'status': status.index,
+        'timeStamp': timestamps?.toJson(),
       };
 
-  // Helper method to parse Status from String
-  static Status _parseStatus(String statusString) {
-    switch (statusString.toLowerCase()) {
-      case 'pending':
-        return Status.pending;
-      case 'inprogress':
-      case 'in_progress':
-        return Status.inProgress;
-      case 'completed':
-        return Status.completed;
-      case 'cancelled':
-        return Status.cancelled;
-      default:
-        return Status.pending;
+  static Status _parseStatus(dynamic value) {
+    if (value is int && value >= 0 && value < Status.values.length) {
+      return Status.values[value];
     }
+    return Status.pending;
   }
 }

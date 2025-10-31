@@ -6,4 +6,5 @@ abstract class StageRepository {
   Future<void> createStage(Stage stage);
   Future<void> updateStage(Stage stage);
   Future<void> deleteStage(String id);
+
 }

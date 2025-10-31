@@ -18,6 +18,11 @@ class ProjectLoadedState extends ProjectState {
   @override
   List<Object?> get props => [projects];
 }
+class ProjectForbiddenState extends ProjectState {
+  final String message;
+  ProjectForbiddenState(this.message);
+}
+
 
 class ProjectErrorState extends ProjectState {
   final String message;

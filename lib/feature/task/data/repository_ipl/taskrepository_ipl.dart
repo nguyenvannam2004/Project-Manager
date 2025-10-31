@@ -6,7 +6,7 @@ import 'package:project_manager/feature/task/domain/repository/taskrepository.da
 
 class TaskRepositoryIpl extends TaskRepository{
 
-  final RemoteDataSource remotedatasource;
+  final RemoteDataSourceTask remotedatasource;
 
   TaskRepositoryIpl(this.remotedatasource);
   @override

@@ -1,29 +1,44 @@
-import 'package:project_manager/core/network/stages/apiclient.dart';
+import 'dart:convert';
+import 'package:project_manager/core/network/auth/IApiclient.dart';
 import 'package:project_manager/feature/stages/data/models/stageModel.dart';
 
-class RemoteDatasource 
-{
-  final ApiClient apiClient;
+class RemoteDatasourceStage {
+  final IApiClient apiClient;
 
-  RemoteDatasource(this.apiClient);
+  RemoteDatasourceStage(this.apiClient);
 
   Future<List<StageModel>> getAllStages() async {
-    // Implementation to fetch stages from remote API
-    final data = await this.apiClient.get('/stages') as List<dynamic>; // ← Thêm await
-    return data.map((e) => StageModel.fromJson(e as Map<String, dynamic>)).toList();
+    final data = await apiClient.get('/api/Stages');
+    final List<dynamic> listData = data is String ? json.decode(data) : data;
+    return listData
+        .map((e) => StageModel.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<StageModel> createStage(StageModel stage) async {
-    final data = await apiClient.post('/stages', stage.toJson());
-    return StageModel.fromJson(data as Map<String, dynamic>);
+    final data = await apiClient.post('/api/Stages', stage.toJson());
+    final Map<String, dynamic> decoded =
+        data is String ? json.decode(data) : data;
+    return StageModel.fromJson(decoded);
   }
 
   Future<StageModel> updateStage(StageModel stage) async {
-    final data = await apiClient.put('/stages/${stage.id}', stage.toJson());
-    return StageModel.fromJson(data as Map<String, dynamic>); // ← Thêm as Map<String, dynamic>
+    try {
+      final data = await apiClient.put('/api/Stages/${stage.id}', stage.toJson());
+      if (data == null || (data is String && data.trim().isEmpty)) {
+        print(' Server returned empty response after updating stage');
+        return stage;
+      }
+      final Map<String, dynamic> decoded =
+          data is String ? json.decode(data) : data;
+      return StageModel.fromJson(decoded);
+    } catch (e) {
+      throw Exception('Failed to update stage: $e');
+    }
   }
 
+
   Future<void> deleteStage(String id) async {
-    await apiClient.delete('/stages/$id');
+    await apiClient.delete('/api/Stages/$id');
   }
 }

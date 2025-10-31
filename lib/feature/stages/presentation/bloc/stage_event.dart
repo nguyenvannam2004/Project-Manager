@@ -9,7 +9,7 @@ class CreateStageEvent extends StageEvent {
   final int id;
   final String name;
   final int projectId;
-  final Text description;  // ← Đổi từ String sang Text
+  final String description;  // ← Đổi từ String sang Text
   final DateTime startDate;
   final DateTime endDate;
   final Status status;  // ← Đổi từ String sang Status
@@ -33,7 +33,7 @@ class UpdateStageEvent extends StageEvent {
   final int id;
   final String name;
   final int projectId;
-  final Text description;  // ← Đổi từ String sang Text
+  final String description;  // ← Đổi từ String sang Text
   final DateTime startDate;
   final DateTime endDate;
   final Status status;  // ← Đổi từ String sang Status
@@ -52,7 +52,11 @@ class UpdateStageEvent extends StageEvent {
     required this.updatedAt,
   });
 }
+class StageForbiddenState extends StageEvent {
+  final String message;
 
+  StageForbiddenState(this.message);
+}
 class DeleteStageEvent extends StageEvent {
   final int id;
 

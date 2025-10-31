@@ -12,7 +12,7 @@ class CreateStageUsecase {
     int id, 
     String name, 
     int projectId, 
-    Text description, 
+    String description, 
     DateTime start_date, 
     DateTime end_date,
     Status status,
