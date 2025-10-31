@@ -140,10 +140,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:project_manager/feature/auth/presentation/bloc/authbloc.dart';
-import 'package:project_manager/feature/auth/presentation/bloc/authevent.dart';
-import 'package:project_manager/feature/auth/presentation/bloc/authstate.dart';
-import 'package:project_manager/feature/project/presentation/pages/project_page.dart';
+import 'package:project_manager/feature/auth/presentation/bloc/auth/authbloc.dart';
+import 'package:project_manager/feature/auth/presentation/bloc/auth/authevent.dart';
+import 'package:project_manager/feature/auth/presentation/bloc/auth/authstate.dart';
+import 'package:project_manager/feature/project/presentation/pages/v1/project_page.dart';
+import 'package:project_manager/feature/project/presentation/pages/v3/project_pagev3.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -173,7 +174,7 @@ class _LoginPageState extends State<LoginPage> {
             if (state is AuthAuthenticated) {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (_) => const ProjectPage()),
+                MaterialPageRoute(builder: (_) => const ProjectPagev3()),
               );
             } else if (state is AuthError) {
               ScaffoldMessenger.of(context).showSnackBar(

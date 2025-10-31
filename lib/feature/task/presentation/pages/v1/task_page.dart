@@ -1,188 +1,48 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:project_manager/feature/stages/domain/usecases/getStage_usecase.dart';
-import 'package:project_manager/feature/stages/domain/usecases/createStage_usecase.dart';
-import 'package:project_manager/feature/stages/domain/usecases/deleteStage_usecase.dart';
-import 'package:project_manager/feature/stages/domain/usecases/updateStage_usecase.dart';
-import 'package:project_manager/feature/stages/presentation/bloc/stage_bloc.dart';
-import 'package:project_manager/feature/stages/presentation/bloc/stage_event.dart';
-import 'package:project_manager/feature/stages/presentation/bloc/stage_state.dart';
-import 'package:project_manager/feature/stages/presentation/pages/stage_form.dart';
-import 'package:project_manager/feature/task/presentation/pages/task_page.dart';
+import 'package:intl/intl.dart';
+import 'package:project_manager/core/entities/status.dart';
+import 'package:project_manager/feature/task/domain/entities/task.dart';
+import 'package:project_manager/feature/task/domain/usecase/gettask_usecase.dart';
+import 'package:project_manager/feature/task/domain/usecase/createtask_usecase.dart';
+import 'package:project_manager/feature/task/domain/usecase/deletetask_usecase.dart';
+import 'package:project_manager/feature/task/domain/usecase/updatetask_usecase.dart';
+import 'package:project_manager/feature/task/presentation/bloc/task_bloc.dart';
+import 'package:project_manager/feature/task/presentation/bloc/task_event.dart';
+import 'package:project_manager/feature/task/presentation/bloc/task_state.dart';
+import 'package:project_manager/feature/task/presentation/pages/v1/task_form.dart';
 
-class StagePage extends StatelessWidget {
-  // final GetStageUsecase getStageUsecase;
-  // final CreateStageUsecase createStageUsecase;
-  // final UpdateStageUsecase updateStageUsecase;
-  // final DeletestageUsecase deleteStageUsecase;
-   final int projectId;
+class TaskPage extends StatelessWidget {
+  // final GetTaskUsecase getTaskUseCase;
+  // final CreateTaskUsecase createTaskUseCase;
+  // final UpdateTaskUsecase updateTaskUseCase;
+  // final DeleteTaskUsecase deleteTaskUseCase;
+  final int stageId;
 
-  const StagePage({
+  const TaskPage({
     super.key,
-    // required this.getStageUsecase,
-    // required this.createStageUsecase,
-    // required this.updateStageUsecase,
-    // required this.deleteStageUsecase,
-    required this.projectId,
+    // required this.getTaskUseCase,
+    // required this.createTaskUseCase,
+    // required this.updateTaskUseCase,
+    // required this.deleteTaskUseCase,
+    required this.stageId,
   });
-
-  Future<void> _showDeleteConfirmation(BuildContext context, dynamic stage) async {
-    final bool? confirmed = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEF4444).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.warning_rounded,
-                  color: Color(0xFFEF4444),
-                  size: 28,
-                ),
-              ),
-              const SizedBox(width: 16),
-              const Expanded(
-                child: Text(
-                  'Xác nhận xóa',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Bạn có chắc chắn muốn xóa giai đoạn "${stage.name}"?',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF374151),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFEF2F2),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: const Color(0xFFEF4444).withOpacity(0.2),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.info_outline_rounded,
-                      size: 20,
-                      color: Color(0xFFEF4444),
-                    ),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Text(
-                        'Hành động này không thể hoàn tác',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF991B1B),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Hủy',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
-                ),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFEF4444).withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: ElevatedButton.icon(
-                onPressed: () => Navigator.of(dialogContext).pop(true),
-                icon: const Icon(Icons.delete_rounded, size: 20),
-                label: const Text(
-                  'Xóa',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirmed == true) {
-      HapticFeedback.mediumImpact();
-      context.read<StageBloc>().add(DeleteStageEvent(id: stage.id));
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    
-    // Modern sophisticated color palette
+    // --- Hàm Helper định nghĩa màu cho Status (Giống mẫu) ---
     Color statusColor(status) {
-      switch (status.toString().split('.').last) {
-        case 'pending':
+      // Dùng 'Status' enum của Task
+      switch (status) {
+        case Status.todo:
+        case Status.pending: // THÊM
           return const Color(0xFFF59E0B); // Amber
-        case 'inProgress':
+        case Status.inProgress:
           return const Color(0xFF3B82F6); // Blue
-        case 'completed':
+        case Status.completed: // SỬA (từ done)
           return const Color(0xFF10B981); // Emerald
-        case 'cancelled':
+        case Status.cancelled: // THÊM
           return const Color(0xFFEF4444); // Red
         default:
           return const Color(0xFF6B7280); // Gray
@@ -193,7 +53,7 @@ class StagePage extends StatelessWidget {
       backgroundColor: const Color(0xFFFAFAFA),
       body: CustomScrollView(
         slivers: [
-          // Modern App Bar with gradient
+          // --- App Bar (Giống mẫu) ---
           SliverAppBar(
             expandedHeight: 120,
             floating: false,
@@ -202,7 +62,7 @@ class StagePage extends StatelessWidget {
             elevation: 0,
             flexibleSpace: FlexibleSpaceBar(
               title: const Text(
-                "Giai đoạn dự án",
+                "Quản lý Task", // Đổi tên
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
@@ -215,7 +75,7 @@ class StagePage extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0xFF6366F1),
+                      Color(0xFF6366F1), // Giữ nguyên dải màu tím
                       Color(0xFF8B5CF6),
                       Color(0xFFA855F7),
                     ],
@@ -253,22 +113,25 @@ class StagePage extends StatelessWidget {
               ),
             ),
           ),
-          // Content
+          // --- Content (Đổi Stage -> Task) ---
           SliverFillRemaining(
-            child: BlocBuilder<StageBloc, StageState>(
+            child: BlocBuilder<TaskBloc, TaskState>(
               builder: (context, state) {
-                if (state is StageLoadingState) {
+                // --- Trạng thái Loading (Giống mẫu) ---
+                if (state is TaskLoadingState) {
                   return const Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Color(0xFF6366F1),
+                          ),
                           strokeWidth: 3,
                         ),
                         SizedBox(height: 20),
                         Text(
-                          'Đang tải dữ liệu...',
+                          'Đang tải dữ liệu Tasks...',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -278,16 +141,18 @@ class StagePage extends StatelessWidget {
                       ],
                     ),
                   );
-                } else if (state is StageLoadedState) {
-                  final stages = state.stage;
-                  if (stages.isEmpty) {
+                }
+                // --- Trạng thái Loaded (Đổi Stage -> Task) ---
+                else if (state is TaskLoadedState) {
+                  final tasks = state.tasks;
+                  // Trạng thái Rỗng (Giống mẫu)
+                  if (tasks.isEmpty) {
                     return Center(
                       child: Padding(
                         padding: const EdgeInsets.all(40.0),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            // Modern empty state illustration
                             Container(
                               width: 120,
                               height: 120,
@@ -301,21 +166,23 @@ class StagePage extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(30),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF6366F1).withOpacity(0.3),
+                                    color: const Color(
+                                      0xFF6366F1,
+                                    ).withOpacity(0.3),
                                     blurRadius: 20,
                                     offset: const Offset(0, 10),
                                   ),
                                 ],
                               ),
                               child: const Icon(
-                                Icons.timeline_outlined,
+                                Icons.task_alt_rounded, // Đổi Icon
                                 size: 60,
                                 color: Colors.white,
                               ),
                             ),
                             const SizedBox(height: 32),
                             const Text(
-                              'Chưa có giai đoạn nào',
+                              'Chưa có Task nào', // Đổi Text
                               style: TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w800,
@@ -324,7 +191,7 @@ class StagePage extends StatelessWidget {
                             ),
                             const SizedBox(height: 12),
                             const Text(
-                              'Tạo giai đoạn đầu tiên để bắt đầu\nquản lý dự án một cách chuyên nghiệp',
+                              'Tạo Task đầu tiên để bắt đầu\nquản lý công việc', // Đổi Text
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 16,
@@ -345,7 +212,9 @@ class StagePage extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF6366F1).withOpacity(0.4),
+                                    color: const Color(
+                                      0xFF6366F1,
+                                    ).withOpacity(0.4),
                                     blurRadius: 20,
                                     offset: const Offset(0, 8),
                                   ),
@@ -356,20 +225,21 @@ class StagePage extends StatelessWidget {
                                   HapticFeedback.lightImpact();
                                   showDialog(
                                     context: context,
-                                    builder: (_) => BlocProvider.value(
-                                      value: context.read<StageBloc>(),
-                                      child: StageFormDialog(projectId: projectId),
-                                    ),
+                                    // Gọi TaskForm (từ file Canvas)
+                                    builder: (_) => const TaskForm(),
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.transparent,
                                   shadowColor: Colors.transparent,
-                                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 32,
+                                    vertical: 16,
+                                  ),
                                 ),
                                 icon: const Icon(Icons.add_rounded, size: 22),
                                 label: const Text(
-                                  'Tạo giai đoạn',
+                                  'Tạo Task', // Đổi Text
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -382,46 +252,80 @@ class StagePage extends StatelessWidget {
                       ),
                     );
                   }
+                  // Trạng thái có Dữ liệu
                   return ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    itemCount: stages.length,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    itemCount: tasks.length,
                     itemBuilder: (context, index) {
-                      final stage = stages[index];
+                      final task = tasks[index];
                       return AnimatedContainer(
                         duration: Duration(milliseconds: 300 + (index * 100)),
                         curve: Curves.easeOutCubic,
                         margin: const EdgeInsets.only(bottom: 16),
-                        child: _ModernStageCard(
-                          stage: stage,
+                        child: _ModernTaskCard(
+                          // Dùng Card mới
+                          task: task,
                           statusColor: statusColor,
                           onEdit: () {
                             HapticFeedback.lightImpact();
                             showDialog(
                               context: context,
-                              builder: (_) => BlocProvider.value(
-                                value: context.read<StageBloc>(),
-                                child: StageFormDialog(
-                                  editingStage: stage,
-                                  projectId: projectId,
-                                ),
+                              builder: (_) => TaskForm(
+                                editingTask: task, // Truyền task vào
                               ),
                             );
                           },
-                          onTap: () {
+                          onDelete: () {
                             HapticFeedback.lightImpact();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => TaskPage(stageId: stage.id),
-                              ),
+                            // --- THÊM HỘP THOẠI XÁC NHẬN ---
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext dialogContext) {
+                                return AlertDialog(
+                                  title: const Text("Xác nhận xóa"),
+                                  content: Text(
+                                    "Bạn có chắc chắn muốn xóa Task '${task.name}' không?",
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      child: const Text("Hủy"),
+                                      onPressed: () {
+                                        Navigator.of(
+                                          dialogContext,
+                                        ).pop(); // Đóng dialog
+                                      },
+                                    ),
+                                    TextButton(
+                                      child: const Text(
+                                        "Xóa",
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.of(
+                                          dialogContext,
+                                        ).pop(); // Đóng dialog
+                                        // Gửi event xóa
+                                        context.read<TaskBloc>().add(
+                                          DeleteTaskEvent(task.id),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
                             );
+                            // --- KẾT THÚC THÊM ---
                           },
-                          onDelete: () => _showDeleteConfirmation(context, stage),
                         ),
                       );
                     },
                   );
-                } else if (state is StageErrorState) {
+                }
+                // --- Trạng thái Lỗi (Giống mẫu) ---
+                else if (state is TaskErrorState) {
                   return Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -453,20 +357,18 @@ class StagePage extends StatelessWidget {
                     ),
                   );
                 }
-                return const SizedBox();
+                return const SizedBox(); // Trạng thái Initial
               },
             ),
           ),
         ],
       ),
+      // --- FAB (Giống mẫu, chỉ đổi text và hàm 'onPressed') ---
       floatingActionButton: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: const LinearGradient(
-            colors: [
-              Color(0xFF6366F1),
-              Color(0xFF8B5CF6),
-            ],
+            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
           ),
           boxShadow: [
             BoxShadow(
@@ -481,51 +383,64 @@ class StagePage extends StatelessWidget {
             HapticFeedback.lightImpact();
             showDialog(
               context: context,
-              builder: (_) => BlocProvider.value(
-                value: context.read<StageBloc>(),
-                child: StageFormDialog(projectId: projectId),
-              ),
+              builder: (_) => const TaskForm(), // Gọi TaskForm
             );
           },
           backgroundColor: Colors.transparent,
           elevation: 0,
           label: const Text(
-            'Thêm giai đoạn',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
+            'Thêm Task', // Đổi Text
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           icon: const Icon(Icons.add_rounded, size: 22),
         ),
       ),
     );
   }
+}
 
-  IconData _getStageIcon(status) {
-    switch (status.toString().split('.').last) {
-      case 'pending':
-        return Icons.schedule_outlined;
-      case 'inProgress':
-        return Icons.play_circle_outline;
-      case 'completed':
-        return Icons.check_circle_outline;
-      case 'cancelled':
-        return Icons.cancel_outlined;
+// --- CARD HIỂN THỊ TASK (Dựa theo _ModernStageCard) ---
+class _ModernTaskCard extends StatelessWidget {
+  final Task task; // Đổi 'stage' -> 'task'
+  final Color Function(dynamic) statusColor;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const _ModernTaskCard({
+    required this.task,
+    required this.statusColor,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  // --- Helper functions (Copy từ mẫu, tùy chỉnh cho Task) ---
+  IconData _getTaskIcon(status) {
+    switch (status) {
+      case Status.todo:
+      case Status.pending: // THÊM
+        return Icons.schedule_rounded;
+      case Status.inProgress:
+        return Icons.play_circle_rounded;
+      case Status.completed: // SỬA (từ done)
+        return Icons.check_circle_rounded;
+      case Status.cancelled: // THÊM
+        return Icons.cancel_rounded;
       default:
-        return Icons.timeline_outlined;
+        return Icons.timeline_rounded;
     }
   }
 
   String _getStatusText(status) {
-    switch (status.toString().split('.').last) {
-      case 'pending':
+    switch (status) {
+      case Status.todo:
+        return 'Cần làm';
+      case Status.pending: // THÊM
         return 'Chờ';
-      case 'inProgress':
+      case Status.inProgress:
         return 'Đang làm';
-      case 'completed':
+      case Status.completed: // SỬA (từ done)
         return 'Hoàn thành';
-      case 'cancelled':
+      case Status.cancelled: // THÊM
         return 'Hủy';
       default:
         return 'Không xác định';
@@ -534,59 +449,13 @@ class StagePage extends StatelessWidget {
 
   String _formatDate(DateTime? date) {
     if (date == null) return 'N/A';
-    return '${date.day}/${date.month}/${date.year}';
+    return DateFormat('dd/MM/yy').format(date); // Dùng DateFormat
   }
-
-  Widget _iOSActionButton({
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(8),
-        onTap: () {
-          HapticFeedback.lightImpact();
-          if (onTap != null) onTap!();
-        },
-        child: Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            icon,
-            size: 16,
-            color: color,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ModernStageCard extends StatelessWidget {
-  final dynamic stage;
-  final Color Function(dynamic) statusColor;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
-  final VoidCallback? onTap;
-
-  const _ModernStageCard({
-    required this.stage,
-    required this.statusColor,
-    required this.onEdit,
-    required this.onDelete,
-    this.onTap,
-  });
 
   @override
   Widget build(BuildContext context) {
-    final color = statusColor(stage.status);
-    
+    final color = statusColor(task.status);
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -608,7 +477,7 @@ class _ModernStageCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
-          onTap: onTap,
+          onTap: () => HapticFeedback.lightImpact(),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -616,7 +485,7 @@ class _ModernStageCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    // Status indicator with gradient
+                    // Status indicator (Giống mẫu)
                     Container(
                       width: 12,
                       height: 12,
@@ -635,7 +504,7 @@ class _ModernStageCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    // Stage icon with modern design
+                    // Icon (Giống mẫu)
                     Container(
                       width: 48,
                       height: 48,
@@ -655,13 +524,13 @@ class _ModernStageCard extends StatelessWidget {
                         ),
                       ),
                       child: Icon(
-                        _getStageIcon(stage.status),
+                        _getTaskIcon(task.status), // Dùng helper của Task
                         size: 24,
                         color: color,
                       ),
                     ),
                     const SizedBox(width: 16),
-                    // Title and status
+                    // Title và status (Giống mẫu)
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -670,7 +539,7 @@ class _ModernStageCard extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                  stage.name,
+                                  task.name, // Dùng task.name
                                   style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w700,
@@ -682,7 +551,10 @@ class _ModernStageCard extends StatelessWidget {
                               ),
                               const SizedBox(width: 12),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     colors: [color, color.withOpacity(0.8)],
@@ -697,7 +569,9 @@ class _ModernStageCard extends StatelessWidget {
                                   ],
                                 ),
                                 child: Text(
-                                  _getStatusText(stage.status),
+                                  _getStatusText(
+                                    task.status,
+                                  ), // Dùng helper Task
                                   style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
@@ -707,37 +581,43 @@ class _ModernStageCard extends StatelessWidget {
                               ),
                             ],
                           ),
-                          (stage.description?.isNotEmpty ?? false)
-                          ? Text(
-                              stage.description!,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF6B7280),
-                                height: 1.4,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            )
-                          : const Text(
-                              'Không có mô tả',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF9CA3AF),
-                              ),
-                            ),
+                          const SizedBox(height: 8),
+                          // Mô tả (Đổi sang task.description)
+                          (task.description.isNotEmpty)
+                              ? Text(
+                                  task.description,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF6B7280),
+                                    height: 1.4,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                )
+                              : const Text(
+                                  'Không có mô tả',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    fontStyle: FontStyle.italic,
+                                    color: Color(0xFF9CA3AF),
+                                  ),
+                                ),
                         ],
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                // Date and actions row
+                // Date và actions (Giống mẫu)
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(12),
@@ -749,14 +629,15 @@ class _ModernStageCard extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.calendar_today_outlined,
                             size: 16,
-                            color: Color(0xFF6B7280),
+                            color: const Color(0xFF6B7280),
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            '${_formatDate(stage.timestamps.startDate)} - ${_formatDate(stage.timestamps.endDate)}',
+                            // Dùng timestamp của Task
+                            '${_formatDate(task.timeStamp.startDate)} - ${_formatDate(task.timeStamp.endDate)}',
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
@@ -767,7 +648,7 @@ class _ModernStageCard extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    // Modern action buttons
+                    // Action buttons (Giống mẫu)
                     Row(
                       children: [
                         _ModernActionButton(
@@ -792,43 +673,9 @@ class _ModernStageCard extends StatelessWidget {
       ),
     );
   }
-
-  IconData _getStageIcon(status) {
-    switch (status.toString().split('.').last) {
-      case 'pending':
-        return Icons.schedule_rounded;
-      case 'inProgress':
-        return Icons.play_circle_rounded;
-      case 'completed':
-        return Icons.check_circle_rounded;
-      case 'cancelled':
-        return Icons.cancel_rounded;
-      default:
-        return Icons.timeline_rounded;
-    }
-  }
-
-  String _getStatusText(status) {
-    switch (status.toString().split('.').last) {
-      case 'pending':
-        return 'Chờ';
-      case 'inProgress':
-        return 'Đang làm';
-      case 'completed':
-        return 'Hoàn thành';
-      case 'cancelled':
-        return 'Hủy';
-      default:
-        return 'Không xác định';
-    }
-  }
-
-  String _formatDate(DateTime? date) {
-    if (date == null) return 'N/A';
-    return '${date.day}/${date.month}/${date.year}';
-  }
 }
 
+// --- WIDGET NÚT ACTION (Copy y hệt mẫu) ---
 class _ModernActionButton extends StatelessWidget {
   final IconData icon;
   final Color color;
@@ -853,16 +700,9 @@ class _ModernActionButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: color.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: color.withOpacity(0.2),
-              width: 1,
-            ),
+            border: Border.all(color: color.withOpacity(0.2), width: 1),
           ),
-          child: Icon(
-            icon,
-            size: 18,
-            color: color,
-          ),
+          child: Icon(icon, size: 18, color: color),
         ),
       ),
     );

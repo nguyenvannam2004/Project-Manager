@@ -8,8 +8,8 @@ import 'package:project_manager/feature/task/domain/usecase/updatetask_usecase.d
 import 'package:project_manager/feature/task/presentation/bloc/task_bloc.dart';
 import 'package:project_manager/feature/task/presentation/bloc/task_event.dart';
 import 'package:project_manager/feature/task/presentation/bloc/task_state.dart';
-import 'package:project_manager/feature/task/presentation/pages/task_form.dart';
-import 'package:project_manager/feature/task/presentation/pages/task_formv2.dart'; // Import file form ta vừa tạo
+import 'package:project_manager/feature/task/presentation/pages/v1/task_form.dart';
+import 'package:project_manager/feature/task/presentation/pages/v2/task_formv2.dart'; // Import file form ta vừa tạo
 
 class TaskPagev2 extends StatelessWidget {
   // final GetTaskUsecase getTaskUseCase;

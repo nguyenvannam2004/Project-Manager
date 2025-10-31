@@ -3,11 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:project_manager/feature/auth/domain/usecase/LoginUsecase.dart';
 import 'package:project_manager/feature/auth/domain/usecase/LogoutUsecase.dart';
 import 'package:project_manager/feature/auth/domain/usecase/RegisterUsecase.dart';
-import 'package:project_manager/feature/auth/presentation/bloc/authbloc.dart';
+import 'package:project_manager/feature/auth/domain/usecase/getuserusecase.dart';
+import 'package:project_manager/feature/auth/domain/usecase/updateroleUsecase.dart';
+import 'package:project_manager/feature/auth/presentation/bloc/auth/authbloc.dart';
+import 'package:project_manager/feature/auth/presentation/bloc/user/userbloc.dart';
 import 'package:project_manager/feature/auth/presentation/pages/loginpage.dart';
 import 'package:project_manager/feature/auth/presentation/pages/loginpagev2.dart';
 import 'package:project_manager/feature/auth/presentation/pages/registerpage.dart';
 import 'package:project_manager/feature/auth/presentation/pages/registerpagev2.dart';
+import 'package:project_manager/feature/auth/presentation/pages/user_ui/user_page.dart';
 import 'package:project_manager/feature/project/domain/usecase/createproject_usecase.dart';
 import 'package:project_manager/feature/project/domain/usecase/deleteproject_usecase.dart';
 import 'package:project_manager/feature/project/domain/usecase/getproject_usecase.dart';
@@ -28,11 +32,19 @@ import 'package:project_manager/feature/task/presentation/bloc/task_bloc.dart';
 import 'package:project_manager/feature/task/presentation/bloc/task_event.dart';
 
 class MyApp extends StatelessWidget {
+  // user
+  final GetUserUsecase getUserUsecase;
+  final UpdateRoleUseCase updateRoleUseCase;
+
+
+// task
   final GetTaskUsecase getTaskUseCase;
   final CreateTaskUsecase createTaskUseCase;
   final UpdateTaskUsecase updateTaskUseCase;
   final DeleteTaskUsecase deleteTaskUseCase;
 
+
+//stages
   final GetStageUsecase getStageUsecase;
   final DeletestageUsecase deleteStageUsecase;
   final CreateStageUsecase createStageUsecase;
@@ -73,7 +85,10 @@ class MyApp extends StatelessWidget {
     required this.getStageUsecase,
     required this.deleteStageUsecase,
     required this.createStageUsecase,
-    required this.updateStageUsecase,
+    required this.updateStageUsecase, 
+    
+    required this.getUserUsecase, 
+    required this.updateRoleUseCase,
 
     // required this.getcustomerUsecase,
     // required this.deletecustomerUsecase,
@@ -108,7 +123,10 @@ class MyApp extends StatelessWidget {
             updateProjectUsecase: updateProjectUsecase,
           )..add(LoadProjectsEvent()),
         ),
-
+        BlocProvider(
+          create: (context) => UserBloc(getUserUsecase,updateRoleUseCase),
+          child: UserPage(),
+        ),
         BlocProvider(
           create: (context) => StageBloc(
             getStageUsecase: getStageUsecase,
@@ -123,7 +141,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         ),
-        home: LoginPagev2(
+        home: LoginPage(
           // getTaskUseCase: getTaskUseCase,
           // createTaskUseCase: createTaskUseCase,
           // updateTaskUseCase: updateTaskUseCase,
@@ -146,8 +164,9 @@ class MyApp extends StatelessWidget {
         ),
 
         routes: {
-          '/login': (context) => LoginPagev2(),
-          '/register': (context) => RegisterPagev2(),
+          '/login': (context) => LoginPage(),
+          '/register': (context) => RegisterPage(),
+          '/users': (context) => UserPage(),
         },
       ),
     );

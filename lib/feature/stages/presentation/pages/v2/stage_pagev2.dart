@@ -7,9 +7,9 @@ import 'package:project_manager/feature/stages/domain/usecases/updateStage_useca
 import 'package:project_manager/feature/stages/presentation/bloc/stage_bloc.dart';
 import 'package:project_manager/feature/stages/presentation/bloc/stage_event.dart';
 import 'package:project_manager/feature/stages/presentation/bloc/stage_state.dart';
-import 'package:project_manager/feature/stages/presentation/pages/stage_form.dart';
-import 'package:project_manager/feature/stages/presentation/pages/stage_formv2.dart';
-import 'package:project_manager/feature/task/presentation/pages/task_pagev2.dart';
+import 'package:project_manager/feature/stages/presentation/pages/v1/stage_form.dart';
+import 'package:project_manager/feature/stages/presentation/pages/v2/stage_formv2.dart';
+import 'package:project_manager/feature/task/presentation/pages/v2/task_pagev2.dart';
 
 class StagePagev2 extends StatelessWidget {
   // final GetStageUsecase getStageUsecase;

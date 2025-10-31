@@ -1,5 +1,6 @@
-// lib/feature/auth/data/model/usermodel.dart
-class UserModel {
+
+
+class UserModel{
   final int id;
   final String username;
   final String role;

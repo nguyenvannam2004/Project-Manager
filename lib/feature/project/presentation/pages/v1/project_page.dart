@@ -3,46 +3,45 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:project_manager/core/entities/status.dart';
-import 'package:project_manager/feature/task/domain/entities/task.dart';
-import 'package:project_manager/feature/task/domain/usecase/gettask_usecase.dart';
-import 'package:project_manager/feature/task/domain/usecase/createtask_usecase.dart';
-import 'package:project_manager/feature/task/domain/usecase/deletetask_usecase.dart';
-import 'package:project_manager/feature/task/domain/usecase/updatetask_usecase.dart';
-import 'package:project_manager/feature/task/presentation/bloc/task_bloc.dart';
-import 'package:project_manager/feature/task/presentation/bloc/task_event.dart';
-import 'package:project_manager/feature/task/presentation/bloc/task_state.dart';
-import 'package:project_manager/feature/task/presentation/pages/task_form.dart';
+import 'package:project_manager/feature/auth/presentation/bloc/auth/authbloc.dart';
+import 'package:project_manager/feature/auth/presentation/bloc/auth/authevent.dart';
+import 'package:project_manager/feature/project/domain/usecase/createproject_usecase.dart';
+import 'package:project_manager/feature/project/domain/usecase/deleteproject_usecase.dart';
+import 'package:project_manager/feature/project/domain/usecase/getproject_usecase.dart';
+import 'package:project_manager/feature/project/domain/usecase/updateproject_usecase.dart';
+import 'package:project_manager/feature/project/presentation/bloc/project_bloc.dart';
+import 'package:project_manager/feature/project/presentation/bloc/project_event.dart';
+import 'package:project_manager/feature/project/presentation/bloc/project_state.dart';
+import 'package:project_manager/feature/project/presentation/pages/v1/project_form.dart';
+import 'package:project_manager/feature/stages/presentation/pages/v1/stage_page.dart';
 
-class TaskPage extends StatelessWidget {
-  // final GetTaskUsecase getTaskUseCase;
-  // final CreateTaskUsecase createTaskUseCase;
-  // final UpdateTaskUsecase updateTaskUseCase;
-  // final DeleteTaskUsecase deleteTaskUseCase;
-  final int stageId;
+class ProjectPage extends StatelessWidget {
+  // final GetProjectUsecase getProjectUsecase;
+  // final CreateProjectUsecase createProjectUsecase;
+  // final UpdateProjectUsecase updateProjectUsecase;
+  // final DeleteProjectUsecase deleteProjectUsecase;
 
-  const TaskPage({
+  const ProjectPage({
     super.key,
-    // required this.getTaskUseCase,
-    // required this.createTaskUseCase,
-    // required this.updateTaskUseCase,
-    // required this.deleteTaskUseCase,
-    required this.stageId,
+    // required this.getProjectUsecase,
+    // required this.createProjectUsecase,
+    // required this.updateProjectUsecase,
+    // required this.deleteProjectUsecase,
   });
 
   @override
   Widget build(BuildContext context) {
-    // --- Hàm Helper định nghĩa màu cho Status (Giống mẫu) ---
-    Color statusColor(status) {
-      // Dùng 'Status' enum của Task
+    context.read<ProjectBloc>().add(LoadProjectsEvent());
+    // Hàm statusColor từ stage_page.dart
+    Color statusColor(Status status) {
       switch (status) {
-        case Status.todo:
-        case Status.pending: // THÊM
+        case Status.pending:
           return const Color(0xFFF59E0B); // Amber
         case Status.inProgress:
           return const Color(0xFF3B82F6); // Blue
-        case Status.completed: // SỬA (từ done)
+        case Status.completed:
           return const Color(0xFF10B981); // Emerald
-        case Status.cancelled: // THÊM
+        case Status.cancelled:
           return const Color(0xFFEF4444); // Red
         default:
           return const Color(0xFF6B7280); // Gray
@@ -53,16 +52,27 @@ class TaskPage extends StatelessWidget {
       backgroundColor: const Color(0xFFFAFAFA),
       body: CustomScrollView(
         slivers: [
-          // --- App Bar (Giống mẫu) ---
           SliverAppBar(
             expandedHeight: 120,
             floating: false,
             pinned: true,
             backgroundColor: Colors.transparent,
             elevation: 0,
+            actions: [ // ← THÊM VÀO ĐÂY
+              IconButton(
+                icon: const Icon(Icons.logout_rounded, color: Colors.white),
+                tooltip: 'Đăng xuất',
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  context.read<AuthBloc>().add(LogoutRequested());
+                  Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+                },
+              ),
+              const SizedBox(width: 8),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               title: const Text(
-                "Quản lý Task", // Đổi tên
+                "Quản lý Dự án", // Đã đổi tên
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
@@ -75,7 +85,7 @@ class TaskPage extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0xFF6366F1), // Giữ nguyên dải màu tím
+                      Color(0xFF6366F1),
                       Color(0xFF8B5CF6),
                       Color(0xFFA855F7),
                     ],
@@ -113,12 +123,33 @@ class TaskPage extends StatelessWidget {
               ),
             ),
           ),
-          // --- Content (Đổi Stage -> Task) ---
+          // Content
           SliverFillRemaining(
-            child: BlocBuilder<TaskBloc, TaskState>(
+            child: BlocListener<ProjectBloc, ProjectState>(
+            listener: (context, state) {
+              if (state is ProjectForbiddenState) {
+                showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: const Text('Không có quyền'),
+                    content: Text(state.message),
+                    actions: [
+                      TextButton(
+                        onPressed: () 
+                        {
+                          Navigator.of(context).pop(); // Đóng dialog
+                          context.read<ProjectBloc>().add(LoadProjectsEvent());
+                        },
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+            child: BlocBuilder<ProjectBloc, ProjectState>(
               builder: (context, state) {
-                // --- Trạng thái Loading (Giống mẫu) ---
-                if (state is TaskLoadingState) {
+                if (state is ProjectLoadingState) {
                   return const Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -131,7 +162,7 @@ class TaskPage extends StatelessWidget {
                         ),
                         SizedBox(height: 20),
                         Text(
-                          'Đang tải dữ liệu Tasks...',
+                          'Đang tải dữ liệu...',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -141,12 +172,9 @@ class TaskPage extends StatelessWidget {
                       ],
                     ),
                   );
-                }
-                // --- Trạng thái Loaded (Đổi Stage -> Task) ---
-                else if (state is TaskLoadedState) {
-                  final tasks = state.tasks;
-                  // Trạng thái Rỗng (Giống mẫu)
-                  if (tasks.isEmpty) {
+                } else if (state is ProjectLoadedState) {
+                  final projects = state.projects; // Logic từ project_page.dart
+                  if (projects.isEmpty) {
                     return Center(
                       child: Padding(
                         padding: const EdgeInsets.all(40.0),
@@ -175,14 +203,14 @@ class TaskPage extends StatelessWidget {
                                 ],
                               ),
                               child: const Icon(
-                                Icons.task_alt_rounded, // Đổi Icon
+                                Icons.folder_copy_outlined, // Đổi icon
                                 size: 60,
                                 color: Colors.white,
                               ),
                             ),
                             const SizedBox(height: 32),
                             const Text(
-                              'Chưa có Task nào', // Đổi Text
+                              'Chưa có dự án nào', // Đổi text
                               style: TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w800,
@@ -191,7 +219,7 @@ class TaskPage extends StatelessWidget {
                             ),
                             const SizedBox(height: 12),
                             const Text(
-                              'Tạo Task đầu tiên để bắt đầu\nquản lý công việc', // Đổi Text
+                              'Tạo dự án đầu tiên để bắt đầu\nquản lý công việc một cách chuyên nghiệp', // Đổi text
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 16,
@@ -225,8 +253,8 @@ class TaskPage extends StatelessWidget {
                                   HapticFeedback.lightImpact();
                                   showDialog(
                                     context: context,
-                                    // Gọi TaskForm (từ file Canvas)
-                                    builder: (_) => const TaskForm(),
+                                    // Logic gọi dialog từ project_page.dart
+                                    builder: (_) => const ProjectFormDialog(),
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(
@@ -239,7 +267,7 @@ class TaskPage extends StatelessWidget {
                                 ),
                                 icon: const Icon(Icons.add_rounded, size: 22),
                                 label: const Text(
-                                  'Tạo Task', // Đổi Text
+                                  'Tạo dự án', // Đổi text
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -252,80 +280,85 @@ class TaskPage extends StatelessWidget {
                       ),
                     );
                   }
-                  // Trạng thái có Dữ liệu
                   return ListView.builder(
+                    
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
                       vertical: 12,
                     ),
-                    itemCount: tasks.length,
+                    itemCount: projects.length,
                     itemBuilder: (context, index) {
-                      final task = tasks[index];
+                      final project =
+                          projects[index]; // Logic project_page.dart
                       return AnimatedContainer(
                         duration: Duration(milliseconds: 300 + (index * 100)),
                         curve: Curves.easeOutCubic,
                         margin: const EdgeInsets.only(bottom: 16),
-                        child: _ModernTaskCard(
-                          // Dùng Card mới
-                          task: task,
-                          statusColor: statusColor,
+                        child: _ModernProjectCard(
+                          // Sử dụng Card tùy chỉnh mới
+                          project: project,
+                          statusColor: statusColor(project.status),
+                          // Truyền các helper functions từ project_page.dart
+                          getProjectIcon: _getStatusIcon,
+                          getStatusText: _getStatusText,
+                          formatDateRange: _formatDateRange,
                           onEdit: () {
                             HapticFeedback.lightImpact();
                             showDialog(
                               context: context,
-                              builder: (_) => TaskForm(
-                                editingTask: task, // Truyền task vào
+                              // Logic gọi dialog sửa từ project_page.dart
+                              builder: (_) =>
+                                  ProjectFormDialog(editingProject: project),
+                            );
+                          },
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => StagePage(projectId: project.id),
                               ),
                             );
                           },
                           onDelete: () {
                             HapticFeedback.lightImpact();
-                            // --- THÊM HỘP THOẠI XÁC NHẬN ---
+                            // Logic gọi dialog xóa từ project_page.dart
                             showDialog(
                               context: context,
-                              builder: (BuildContext dialogContext) {
+                              builder: (BuildContext context) {
                                 return AlertDialog(
-                                  title: const Text("Xác nhận xóa"),
-                                  content: Text(
-                                    "Bạn có chắc chắn muốn xóa Task '${task.name}' không?",
+                                  title: const Text('Xác nhận xóa'),
+                                  content: const Text(
+                                    'Bạn có chắc chắn muốn xóa dự án này?',
                                   ),
                                   actions: [
+                                    
                                     TextButton(
-                                      child: const Text("Hủy"),
-                                      onPressed: () {
-                                        Navigator.of(
-                                          dialogContext,
-                                        ).pop(); // Đóng dialog
-                                      },
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(),
+                                      child: const Text('Hủy'),
                                     ),
                                     TextButton(
-                                      child: const Text(
-                                        "Xóa",
-                                        style: TextStyle(color: Colors.red),
-                                      ),
                                       onPressed: () {
-                                        Navigator.of(
-                                          dialogContext,
-                                        ).pop(); // Đóng dialog
-                                        // Gửi event xóa
-                                        context.read<TaskBloc>().add(
-                                          DeleteTaskEvent(task.id),
+                                        context.read<ProjectBloc>().add(
+                                          DeleteProjectEvent(project.id),
                                         );
+                                        Navigator.of(context).pop();
                                       },
+                                      child: const Text('Xóa'),
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: Colors.red,
+                                      ),
                                     ),
                                   ],
                                 );
                               },
                             );
-                            // --- KẾT THÚC THÊM ---
                           },
                         ),
                       );
                     },
                   );
-                }
-                // --- Trạng thái Lỗi (Giống mẫu) ---
-                else if (state is TaskErrorState) {
+                } else if (state is ProjectErrorState) {
                   return Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -345,7 +378,7 @@ class TaskPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 20),
                         Text(
-                          "Lỗi: ${state.message}",
+                          "Lỗi: ${state.message}", // Logic từ project_page.dart
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -357,13 +390,15 @@ class TaskPage extends StatelessWidget {
                     ),
                   );
                 }
-                return const SizedBox(); // Trạng thái Initial
+                return const SizedBox();
               },
             ),
           ),
+          ),
         ],
+
       ),
-      // --- FAB (Giống mẫu, chỉ đổi text và hàm 'onPressed') ---
+      // Giao diện FloatingActionButton từ stage_page.dart
       floatingActionButton: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
@@ -383,13 +418,14 @@ class TaskPage extends StatelessWidget {
             HapticFeedback.lightImpact();
             showDialog(
               context: context,
-              builder: (_) => const TaskForm(), // Gọi TaskForm
+              // Logic gọi dialog từ project_page.dart
+              builder: (_) => const ProjectFormDialog(),
             );
           },
           backgroundColor: Colors.transparent,
           elevation: 0,
           label: const Text(
-            'Thêm Task', // Đổi Text
+            'Thêm dự án', // Đổi text
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           icon: const Icon(Icons.add_rounded, size: 22),
@@ -397,64 +433,121 @@ class TaskPage extends StatelessWidget {
       ),
     );
   }
-}
 
-// --- CARD HIỂN THỊ TASK (Dựa theo _ModernStageCard) ---
-class _ModernTaskCard extends StatelessWidget {
-  final Task task; // Đổi 'stage' -> 'task'
-  final Color Function(dynamic) statusColor;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  // --- BỘ HÀM HELPER TỪ PROJECT_PAGE.DART (GIỮ NGUYÊN) ---
 
-  const _ModernTaskCard({
-    required this.task,
-    required this.statusColor,
-    required this.onEdit,
-    required this.onDelete,
-  });
-
-  // --- Helper functions (Copy từ mẫu, tùy chỉnh cho Task) ---
-  IconData _getTaskIcon(status) {
+  IconData _getStatusIcon(Status status) {
     switch (status) {
-      case Status.todo:
-      case Status.pending: // THÊM
-        return Icons.schedule_rounded;
       case Status.inProgress:
-        return Icons.play_circle_rounded;
-      case Status.completed: // SỬA (từ done)
-        return Icons.check_circle_rounded;
-      case Status.cancelled: // THÊM
-        return Icons.cancel_rounded;
+        return Icons.check_circle;
+      case Status.pending:
+        return Icons.watch_later_outlined;
+      case Status.completed:
+        return Icons.check_circle;
+      case Status.cancelled:
+        return Icons.cancel_outlined;
       default:
-        return Icons.timeline_rounded;
+        return Icons.help_outline;
     }
   }
 
-  String _getStatusText(status) {
+  Color _getStatusIconColor(Status status) {
     switch (status) {
-      case Status.todo:
-        return 'Cần làm';
-      case Status.pending: // THÊM
-        return 'Chờ';
+      case Status.inProgress:
+        return Colors.blue;
+      case Status.pending:
+        return Colors.orange;
+      case Status.completed:
+        return Colors.green;
+      case Status.cancelled:
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String _getStatusText(Status status) {
+    switch (status) {
       case Status.inProgress:
         return 'Đang làm';
-      case Status.completed: // SỬA (từ done)
+      case Status.pending:
+        return 'Chờ';
+      case Status.completed:
         return 'Hoàn thành';
-      case Status.cancelled: // THÊM
-        return 'Hủy';
+      case Status.cancelled:
+        return 'Đã hủy';
       default:
-        return 'Không xác định';
+        return 'Không rõ';
+    }
+  }
+
+  Color _getStatusChipColor(Status status) {
+    switch (status) {
+      case Status.inProgress:
+        return Colors.blue[100]!;
+      case Status.pending:
+        return Colors.orange[100]!;
+      case Status.completed:
+        return Colors.green[100]!;
+      case Status.cancelled:
+        return Colors.red[100]!;
+      default:
+        return Colors.grey[200]!;
+    }
+  }
+
+  Color _getStatusTextColor(Status status) {
+    switch (status) {
+      case Status.inProgress:
+        return Colors.blue[800]!;
+      case Status.pending:
+        return Colors.orange[800]!;
+      case Status.completed:
+        return Colors.green[800]!;
+      case Status.cancelled:
+        return Colors.red[800]!;
+      default:
+        return Colors.grey[800]!;
     }
   }
 
   String _formatDate(DateTime? date) {
     if (date == null) return 'N/A';
-    return DateFormat('dd/MM/yy').format(date); // Dùng DateFormat
+    return DateFormat('dd/MM/yyyy').format(date);
   }
+
+  String _formatDateRange(DateTime? startDate, DateTime? endDate) {
+    return '${_formatDate(startDate)} - ${_formatDate(endDate)}';
+  }
+}
+
+// --- CARD WIDGET MỚI (DỰA TRÊN _ModernStageCard) ---
+
+class _ModernProjectCard extends StatelessWidget {
+  final dynamic project;
+  final Color statusColor;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+  final VoidCallback? onTap;
+  // Truyền các helper functions vào
+  final IconData Function(Status) getProjectIcon;
+  final String Function(Status) getStatusText;
+  final String Function(DateTime?, DateTime?) formatDateRange;
+
+  const _ModernProjectCard({
+    required this.project,
+    required this.statusColor,
+    required this.onEdit,
+    required this.onDelete,
+    required this.getProjectIcon,
+    required this.getStatusText,
+    required this.formatDateRange, 
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final color = statusColor(task.status);
+    final color = statusColor;
 
     return Container(
       decoration: BoxDecoration(
@@ -477,7 +570,12 @@ class _ModernTaskCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
-          onTap: () => HapticFeedback.lightImpact(),
+          onTap: () {
+            HapticFeedback.lightImpact();
+            if (onTap != null) {
+            onTap!(); // gọi callback từ ProjectPage
+            }
+          },
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -485,7 +583,7 @@ class _ModernTaskCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    // Status indicator (Giống mẫu)
+                    // Status indicator
                     Container(
                       width: 12,
                       height: 12,
@@ -504,7 +602,7 @@ class _ModernTaskCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    // Icon (Giống mẫu)
+                    // Project icon
                     Container(
                       width: 48,
                       height: 48,
@@ -524,13 +622,13 @@ class _ModernTaskCard extends StatelessWidget {
                         ),
                       ),
                       child: Icon(
-                        _getTaskIcon(task.status), // Dùng helper của Task
+                        getProjectIcon(project.status), // Dùng helper
                         size: 24,
                         color: color,
                       ),
                     ),
                     const SizedBox(width: 16),
-                    // Title và status (Giống mẫu)
+                    // Title and status
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -539,7 +637,7 @@ class _ModernTaskCard extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                  task.name, // Dùng task.name
+                                  project.name, // Logic project_page.dart
                                   style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w700,
@@ -569,9 +667,7 @@ class _ModernTaskCard extends StatelessWidget {
                                   ],
                                 ),
                                 child: Text(
-                                  _getStatusText(
-                                    task.status,
-                                  ), // Dùng helper Task
+                                  getStatusText(project.status), // Dùng helper
                                   style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
@@ -582,10 +678,10 @@ class _ModernTaskCard extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 8),
-                          // Mô tả (Đổi sang task.description)
-                          (task.description.isNotEmpty)
+                          // Logic description (đã sửa lỗi từ các tin nhắn trước)
+                          (project.description.isNotEmpty)
                               ? Text(
-                                  task.description,
+                                  project.description,
                                   style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
@@ -600,7 +696,6 @@ class _ModernTaskCard extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
-                                    fontStyle: FontStyle.italic,
                                     color: Color(0xFF9CA3AF),
                                   ),
                                 ),
@@ -610,7 +705,7 @@ class _ModernTaskCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 16),
-                // Date và actions (Giống mẫu)
+                // Date and actions row
                 Row(
                   children: [
                     Container(
@@ -629,15 +724,18 @@ class _ModernTaskCard extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.calendar_today_outlined,
                             size: 16,
-                            color: const Color(0xFF6B7280),
+                            color: Color(0xFF6B7280),
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            // Dùng timestamp của Task
-                            '${_formatDate(task.timeStamp.startDate)} - ${_formatDate(task.timeStamp.endDate)}',
+                            // Dùng helper và logic đã sửa
+                            formatDateRange(
+                              project.timestamp.startDate,
+                              project.timestamp.endDate,
+                            ),
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
@@ -648,7 +746,7 @@ class _ModernTaskCard extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    // Action buttons (Giống mẫu)
+                    // Modern action buttons
                     Row(
                       children: [
                         _ModernActionButton(
@@ -675,7 +773,7 @@ class _ModernTaskCard extends StatelessWidget {
   }
 }
 
-// --- WIDGET NÚT ACTION (Copy y hệt mẫu) ---
+// --- WIDGET NÚT (GIỮ NGUYÊN TỪ STAGE_PAGE.DART) ---
 class _ModernActionButton extends StatelessWidget {
   final IconData icon;
   final Color color;
@@ -708,3 +806,4 @@ class _ModernActionButton extends StatelessWidget {
     );
   }
 }
+

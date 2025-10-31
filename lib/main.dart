@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:project_manager/core/network/auth/ApiFromBackend.dart';
 import 'package:project_manager/core/network/auth/IApiclient.dart';
+import 'package:project_manager/feature/auth/domain/usecase/getuserusecase.dart';
+import 'package:project_manager/feature/auth/domain/usecase/updateroleUsecase.dart';
 import 'package:project_manager/feature/auth/presentation/pages/loginpagev2.dart';
 import 'package:project_manager/feature/auth/presentation/pages/registerpage.dart';
 import 'package:project_manager/feature/customer/prsentation/bloc/customer_bloc.dart';
@@ -11,7 +13,7 @@ import 'package:project_manager/feature/auth/domain/repository/AuthRepository.da
 import 'package:project_manager/feature/auth/domain/usecase/LoginUsecase.dart';
 import 'package:project_manager/feature/auth/domain/usecase/LogoutUsecase.dart';
 import 'package:project_manager/feature/auth/domain/usecase/RegisterUsecase.dart';
-import 'package:project_manager/feature/auth/presentation/bloc/authbloc.dart';
+import 'package:project_manager/feature/auth/presentation/bloc/auth/authbloc.dart';
 import 'package:project_manager/feature/auth/presentation/pages/loginpage.dart';
 import 'package:project_manager/feature/customer/data/repository_ipl/customerrepository_ipl.dart';
 import 'package:project_manager/feature/customer/domain/repository/customerrepository.dart';
@@ -52,11 +54,11 @@ import 'package:project_manager/feature/task/presentation/bloc/task_event.dart';
 import 'package:project_manager/myapp.dart';
 
 void main() {
-  
   final IApiClient apiClient = ApiClientfrombackend('https://localhost:7277');
   final AuthRemoteDataSource authremoteDataSource = AuthRemoteDataSource(
     apiClient,
   );
+
   /// chức năng login
   final AuthRepository authRepository = AuthRepositoryImpl(
     authremoteDataSource,
@@ -65,7 +67,8 @@ void main() {
   final LogoutUseCase logoutUseCase = LogoutUseCase(authRepository);
   final RegisterUseCase registerUseCase = RegisterUseCase(authRepository);
 
-
+  final UpdateRoleUseCase updateRoleUseCase = UpdateRoleUseCase(authRepository);
+  final GetUserUsecase getUserUsecase = GetUserUsecase(authRepository);
 
   // chức năng liên quan tới tài nguyên khách hàng
   // final RemoteDataSource remotedatasrc = RemoteDataSource(apiClient);
@@ -86,7 +89,9 @@ void main() {
   // );
 
   // chức năng liên quan tới tài nguyên project
-  final RemoteDataSourceProject remotedatasrcproject = RemoteDataSourceProject(apiClient);
+  final RemoteDataSourceProject remotedatasrcproject = RemoteDataSourceProject(
+    apiClient,
+  );
   final ProjectRepository projectRepository = ProjectRepositoryIpl(
     remotedatasrcproject,
   );
@@ -103,71 +108,58 @@ void main() {
     projectRepository,
   );
 
-// chức năng liên quan tới tài nguyên stages
-    final RemoteDatasourceStage remotedatasrc = RemoteDatasourceStage(apiClient);
-    final StageRepository stageRepository = StagesRepositoryIpl(
-      remotedatasrc,
-    );
-    final GetStageUsecase getStageUsecase = GetStageUsecase(
-      stageRepository,
-    );
-    final DeletestageUsecase deleteStageUsecase = DeletestageUsecase(
-      stageRepository,
-    );
-    final CreateStageUsecase createStageUsecase = CreateStageUsecase(
-      stageRepository,
-    );
-    final UpdateStageUsecase updateStageUsecase = UpdateStageUsecase(
-      stageRepository,
-    );
+  // chức năng liên quan tới tài nguyên stages
+  final RemoteDatasourceStage remotedatasrc = RemoteDatasourceStage(apiClient);
+  final StageRepository stageRepository = StagesRepositoryIpl(remotedatasrc);
+  final GetStageUsecase getStageUsecase = GetStageUsecase(stageRepository);
+  final DeletestageUsecase deleteStageUsecase = DeletestageUsecase(
+    stageRepository,
+  );
+  final CreateStageUsecase createStageUsecase = CreateStageUsecase(
+    stageRepository,
+  );
+  final UpdateStageUsecase updateStageUsecase = UpdateStageUsecase(
+    stageRepository,
+  );
 
-    // chức năng liên quan tới tài nguyên task
-  final RemoteDataSourceTask remotedatasrctask = RemoteDataSourceTask(apiClient);
-  final TaskRepository taskRepository = TaskRepositoryIpl(
-    remotedatasrctask,
+  // chức năng liên quan tới tài nguyên task
+  final RemoteDataSourceTask remotedatasrctask = RemoteDataSourceTask(
+    apiClient,
   );
-  final GetTaskUsecase getTaskUsecase = GetTaskUsecase(
-    taskRepository,
-  );
-  final CreateTaskUsecase createTaskUsecase = CreateTaskUsecase(
-    taskRepository,
-  );
-  final UpdateTaskUsecase updateTaskUsecase = UpdateTaskUsecase(
-    taskRepository,
-  );
-  final DeleteTaskUsecase deleteTaskUsecase = DeleteTaskUsecase(
-    taskRepository,
-  );
-   
+  final TaskRepository taskRepository = TaskRepositoryIpl(remotedatasrctask);
+  final GetTaskUsecase getTaskUsecase = GetTaskUsecase(taskRepository);
+  final CreateTaskUsecase createTaskUsecase = CreateTaskUsecase(taskRepository);
+  final UpdateTaskUsecase updateTaskUsecase = UpdateTaskUsecase(taskRepository);
+  final DeleteTaskUsecase deleteTaskUsecase = DeleteTaskUsecase(taskRepository);
+
   runApp(
     MyApp(
       loginUseCase: loginUseCase,
       logoutUseCase: logoutUseCase,
-      registerUseCase: registerUseCase, 
-      
-      
-      getTaskUseCase: getTaskUsecase, 
-      createTaskUseCase: createTaskUsecase, 
-      updateTaskUseCase: updateTaskUsecase, 
-      deleteTaskUseCase: deleteTaskUsecase, 
+      registerUseCase: registerUseCase,
 
-      getProjectUsecase: getProjectUsecase, 
-      deleteProjectUsecase: deleteProjectUsecase, 
-      createProjectUsecase: createProjectUsecase, 
-      updateProjectUsecase: updateProjectUsecase, 
-      
-      getStageUsecase: getStageUsecase, 
-      deleteStageUsecase: deleteStageUsecase, 
-      createStageUsecase: createStageUsecase, 
+      getTaskUseCase: getTaskUsecase,
+      createTaskUseCase: createTaskUsecase,
+      updateTaskUseCase: updateTaskUsecase,
+      deleteTaskUseCase: deleteTaskUsecase,
+
+      getProjectUsecase: getProjectUsecase,
+      deleteProjectUsecase: deleteProjectUsecase,
+      createProjectUsecase: createProjectUsecase,
+      updateProjectUsecase: updateProjectUsecase,
+
+      getStageUsecase: getStageUsecase,
+      deleteStageUsecase: deleteStageUsecase,
+      createStageUsecase: createStageUsecase,
       updateStageUsecase: updateStageUsecase,
+
+      getUserUsecase: getUserUsecase,
+      updateRoleUseCase: updateRoleUseCase,
 
       // getcustomerUsecase: null,
       // deletecustomerUsecase: null,
-      // createCustomerUsecase: null, 
+      // createCustomerUsecase: null,
       // updateCustomerUsecase: null,
     ),
   );
 }
-
-
-

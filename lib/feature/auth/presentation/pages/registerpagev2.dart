@@ -1,9 +1,9 @@
 // lib/feature/auth/presentation/pages/register_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:project_manager/feature/auth/presentation/bloc/authbloc.dart';
-import 'package:project_manager/feature/auth/presentation/bloc/authevent.dart';
-import 'package:project_manager/feature/auth/presentation/bloc/authstate.dart';
+import 'package:project_manager/feature/auth/presentation/bloc/auth/authbloc.dart';
+import 'package:project_manager/feature/auth/presentation/bloc/auth/authevent.dart';
+import 'package:project_manager/feature/auth/presentation/bloc/auth/authstate.dart';
 
 
 class RegisterPagev2 extends StatefulWidget {

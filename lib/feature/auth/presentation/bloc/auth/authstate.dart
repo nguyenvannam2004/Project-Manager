@@ -27,3 +27,7 @@ class AuthError extends AuthState {
   final String message;
   const AuthError(this.message);
 }
+
+
+
+

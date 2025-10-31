@@ -1,4 +1,5 @@
 import 'package:project_manager/feature/auth/data/datasource/AuthRemoteDataSource.dart';
+import 'package:project_manager/feature/auth/data/model/userdto.dart';
 import 'package:project_manager/feature/auth/domain/entities/User.dart';
 import 'package:project_manager/feature/auth/domain/repository/AuthRepository.dart';
 
@@ -30,5 +31,18 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<bool> isLoggedIn() async {
     return await remoteDataSource.isLoggedIn();
+  }
+  
+  @override
+  Future<List<User>> getAllUsers() async {
+    final data = await remoteDataSource.getUsers();
+  
+    return data; 
+  }
+  
+  @override
+  Future<UserDto> updateUserRole(int userId, int role) async{
+    final updatedUserData = await remoteDataSource.updateUserRole(userId, role);
+    return updatedUserData;
   }
 }

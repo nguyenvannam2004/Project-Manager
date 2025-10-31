@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:project_manager/feature/auth/presentation/bloc/authbloc.dart';
-import 'package:project_manager/feature/auth/presentation/bloc/authevent.dart';
+import 'package:project_manager/feature/auth/presentation/bloc/auth/authbloc.dart';
+import 'package:project_manager/feature/auth/presentation/bloc/auth/authevent.dart';
 import 'package:project_manager/feature/project/domain/usecase/createproject_usecase.dart';
 import 'package:project_manager/feature/project/domain/usecase/deleteproject_usecase.dart';
 import 'package:project_manager/feature/project/domain/usecase/getproject_usecase.dart';
@@ -9,8 +9,8 @@ import 'package:project_manager/feature/project/domain/usecase/updateproject_use
 import 'package:project_manager/feature/project/presentation/bloc/project_bloc.dart';
 import 'package:project_manager/feature/project/presentation/bloc/project_event.dart';
 import 'package:project_manager/feature/project/presentation/bloc/project_state.dart';
-import 'package:project_manager/feature/project/presentation/pages/project_form.dart';
-import 'package:project_manager/feature/stages/presentation/pages/stage_pagev2.dart';
+import 'package:project_manager/feature/project/presentation/pages/v1/project_form.dart';
+import 'package:project_manager/feature/stages/presentation/pages/v2/stage_pagev2.dart';
 
 class ProjectPagev2 extends StatelessWidget {
   // final GetProjectUsecase getProjectUsecase;

@@ -1,9 +1,9 @@
 // lib/feature/auth/presentation/pages/login_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:project_manager/feature/auth/presentation/bloc/authbloc.dart';
-import 'package:project_manager/feature/auth/presentation/bloc/authevent.dart';
-import 'package:project_manager/feature/auth/presentation/bloc/authstate.dart';
+import 'package:project_manager/feature/auth/presentation/bloc/auth/authbloc.dart';
+import 'package:project_manager/feature/auth/presentation/bloc/auth/authevent.dart';
+import 'package:project_manager/feature/auth/presentation/bloc/auth/authstate.dart';
 import 'package:project_manager/feature/auth/presentation/pages/homepage.dart';
 import 'package:project_manager/feature/customer/domain/usecase/createcustomer_usecase.dart';
 import 'package:project_manager/feature/customer/domain/usecase/deletecustomer_usecase.dart';
@@ -13,18 +13,18 @@ import 'package:project_manager/feature/project/domain/usecase/createproject_use
 import 'package:project_manager/feature/project/domain/usecase/deleteproject_usecase.dart';
 import 'package:project_manager/feature/project/domain/usecase/getproject_usecase.dart';
 import 'package:project_manager/feature/project/domain/usecase/updateproject_usecase.dart';
-import 'package:project_manager/feature/project/presentation/pages/project_page.dart';
-import 'package:project_manager/feature/project/presentation/pages/project_pagev2.dart';
+import 'package:project_manager/feature/project/presentation/pages/v1/project_page.dart';
+import 'package:project_manager/feature/project/presentation/pages/v2/project_pagev2.dart';
 import 'package:project_manager/feature/stages/domain/usecases/createStage_usecase.dart';
 import 'package:project_manager/feature/stages/domain/usecases/deleteStage_usecase.dart';
 import 'package:project_manager/feature/stages/domain/usecases/getStage_usecase.dart';
 import 'package:project_manager/feature/stages/domain/usecases/updateStage_usecase.dart';
-import 'package:project_manager/feature/stages/presentation/pages/stage_page.dart';
+import 'package:project_manager/feature/stages/presentation/pages/v1/stage_page.dart';
 import 'package:project_manager/feature/task/domain/usecase/createtask_usecase.dart';
 import 'package:project_manager/feature/task/domain/usecase/deletetask_usecase.dart';
 import 'package:project_manager/feature/task/domain/usecase/gettask_usecase.dart';
 import 'package:project_manager/feature/task/domain/usecase/updatetask_usecase.dart';
-import 'package:project_manager/feature/task/presentation/pages/task_page.dart';
+import 'package:project_manager/feature/task/presentation/pages/v1/task_page.dart';
 
 
 class LoginPagev2 extends StatefulWidget {

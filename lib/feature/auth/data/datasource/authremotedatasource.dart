@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:project_manager/feature/auth/data/model/userdto.dart';
 import 'package:project_manager/feature/auth/data/model/usermodel.dart';
 
 import '../../../../core/network/auth/IApiclient.dart';
@@ -38,5 +41,30 @@ class AuthRemoteDataSource {
 
   Future<bool> isLoggedIn() async {
     return await apiClient.isLoggedIn();
+  }
+
+  Future<List<UserDto>> getUsers() async {
+    final data = await apiClient.get('/api/Auth/users');
+
+    final List<dynamic> decoded =
+        data is String ? json.decode(data) as List<dynamic> : data as List<dynamic>;
+
+    return decoded.map((e) => UserDto.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future updateUserRole(int userId, int role) async {
+    // Gọi API update role
+    final response = await apiClient.put(
+      '/api/Auth/update-role/$userId', // endpoint update role
+      {
+        'roleId': role,
+      },
+    );
+    // Nếu response trả về JSON, parse về UserDto
+    final userDto = response is String
+        ? UserDto.fromJson(json.decode(response) as Map<String, dynamic>)
+        : UserDto.fromJson(response as Map<String, dynamic>);
+
+    return userDto;
   }
 }
